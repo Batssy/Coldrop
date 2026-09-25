@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="view_distribution_region_list" model="ir.ui.view">
+    <field name="name">distribution.region.list</field><field name="model">distribution.region</field>
+    <field name="arch" type="xml"><list><field name="code"/><field name="name"/><field name="company_id"/><field name="manager_id"/></list></field>
+  </record>
+  <record id="view_distribution_site_list" model="ir.ui.view">
+    <field name="name">distribution.site.list</field><field name="model">distribution.site</field>
+    <field name="arch" type="xml"><list><field name="code"/><field name="name"/><field name="region_id"/><field name="warehouse_id"/><field name="manager_id"/></list></field>
+  </record>
+  <record id="view_distribution_subregion_list" model="ir.ui.view">
+    <field name="name">distribution.subregion.list</field><field name="model">distribution.subregion</field>
+    <field name="arch" type="xml"><list><field name="code"/><field name="name"/><field name="region_id"/><field name="site_id"/><field name="manager_id"/><field name="active"/></list></field>
+  </record>
+  <record id="view_distribution_route_list" model="ir.ui.view">
+    <field name="name">distribution.route.list</field><field name="model">distribution.route</field>
+    <field name="arch" type="xml"><list><field name="code"/><field name="name"/><field name="site_id"/><field name="salesperson_id"/><field name="driver_id" domain="[('is_distribution_driver','=',True),('active','=',True)]"/></list></field>
+  </record>
+
+  <record id="view_partner_distribution_form" model="ir.ui.view">
+    <field name="name">res.partner.distribution.form</field><field name="model">res.partner</field><field name="inherit_id" ref="base.view_partner_form"/>
+    <field name="arch" type="xml"><xpath expr="//sheet" position="inside"><group string="Distribution Segmentation" invisible="customer_rank == 0"><group><field name="distribution_region_id"/><field name="distribution_subregion_id"/><field name="distribution_site_id"/><field name="distribution_route_id"/></group><group><field name="distribution_onboarded_on"/><field name="distribution_onboarding_salesperson_id"/><field name="location_verified" readonly="1"/><field name="location_verified_on" readonly="1"/></group></group></xpath></field>
+  </record>
+  <record id="view_employee_distribution_form" model="ir.ui.view">
+    <field name="name">hr.employee.distribution.form</field><field name="model">hr.employee</field><field name="inherit_id" ref="hr.view_employee_form"/>
+    <field name="arch" type="xml"><xpath expr="//sheet" position="inside"><group string="Distribution Assignment"><group><field name="distribution_region_id"/><field name="distribution_site_id"/><field name="distribution_route_id"/><field name="distribution_default_warehouse_id"/></group><group><field name="distribution_cost_center"/><field name="is_distribution_driver"/><field name="distribution_employment_type"/></group></group></xpath></field>
+  </record>
+  <record id="view_product_template_distribution_form" model="ir.ui.view">
+    <field name="name">product.template.distribution.form</field><field name="model">product.template</field><field name="inherit_id" ref="product.product_template_only_form_view"/>
+    <field name="arch" type="xml"><xpath expr="//sheet" position="inside"><group string="Distribution Product"><group><field name="business_line"/><field name="distribution_sku"/><field name="supplier_sku"/><field name="brand_name"/><field name="flavour"/><field name="container_volume_ml"/><field name="units_per_pack"/><field name="packaging_type"/></group><group><field name="returnable_asset"/><field name="returnable_units_per_sale_pack"/><field name="returnable_product_id"/><field name="supplier_owner_id"/><field name="deposit_value"/><field name="replacement_value"/><field name="minimum_customer_shelf_life_days"/></group></group></xpath></field>
+  </record>
+
+  <record id="action_distribution_regions" model="ir.actions.act_window"><field name="name">Regions</field><field name="res_model">distribution.region</field><field name="view_mode">list,form</field></record>
+  <record id="action_distribution_subregions" model="ir.actions.act_window"><field name="name">Sub-Regions</field><field name="res_model">distribution.subregion</field><field name="view_mode">list,form</field></record>
+  <record id="action_distribution_sites" model="ir.actions.act_window"><field name="name">Sites</field><field name="res_model">distribution.site</field><field name="view_mode">list,form</field></record>
+  <record id="action_distribution_routes" model="ir.actions.act_window"><field name="name">Routes</field><field name="res_model">distribution.route</field><field name="view_mode">list,form</field></record>
+  <record id="action_distribution_customers" model="ir.actions.act_window"><field name="name">Customers by Geography</field><field name="res_model">res.partner</field><field name="view_mode">list,form</field><field name="domain">[('customer_rank','&gt;',0)]</field></record>
+
+  <menuitem id="menu_distribution_configuration_root" name="Distribution Configuration" sequence="10" groups="distribution_core.group_distribution_core_user"/>
+  <menuitem id="menu_distribution_regions" parent="menu_distribution_configuration_root" name="Regions" action="action_distribution_regions" sequence="10"/>
+  <menuitem id="menu_distribution_subregions" parent="menu_distribution_configuration_root" name="Sub-Regions" action="action_distribution_subregions" sequence="15"/>
+  <menuitem id="menu_distribution_sites" parent="menu_distribution_configuration_root" name="Sites" action="action_distribution_sites" sequence="20"/>
+  <menuitem id="menu_distribution_routes" parent="menu_distribution_configuration_root" name="Routes" action="action_distribution_routes" sequence="30"/>
+  <menuitem id="menu_distribution_customers" parent="menu_distribution_configuration_root" name="Customers by Geography" action="action_distribution_customers" sequence="40"/>
+</odoo>

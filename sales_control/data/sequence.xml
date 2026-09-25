@@ -1,0 +1,1 @@
+<odoo><record id="seq_sales_control" model="ir.sequence"><field name="name">Sales Control</field><field name="code">sales.exception</field><field name="prefix">SCE/%(year)s/</field><field name="padding">5</field></record></odoo>

@@ -1,0 +1,1 @@
+<odoo><record id="seq_non_core_business" model="ir.sequence"><field name="name">Non-Core Business</field><field name="code">non.core.request</field><field name="prefix">NCB/%(year)s/</field><field name="padding">5</field></record></odoo>

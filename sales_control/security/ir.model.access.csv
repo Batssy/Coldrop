@@ -1,0 +1,5 @@
+id,name,model_id/id,group_id/id,perm_read,perm_write,perm_create,perm_unlink
+access_sales_control_user,Sales Control user,model_sales_exception,sales_control.group_sales_control_user,1,1,1,0
+access_sales_control_reviewer,Sales Control reviewer,model_sales_exception,sales_control.group_sales_control_reviewer,1,1,1,0
+access_sales_control_approver,Sales Control approver,model_sales_exception,sales_control.group_sales_control_approver,1,1,1,0
+access_sales_control_manager,Sales Control manager,model_sales_exception,sales_control.group_sales_control_manager,1,1,1,1

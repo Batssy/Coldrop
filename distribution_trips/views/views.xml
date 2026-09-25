@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="view_distribution_trips_list" model="ir.ui.view">
+    <field name="name">distribution.trip.list</field>
+    <field name="model">distribution.trip</field>
+    <field name="arch" type="xml">
+      <list decoration-warning="state == 'submitted'" decoration-success="state == 'closed'">
+        <field name="name" />
+        <field name="state" />
+        <field name="route_id" />
+        <field name="vehicle_id" />
+        <field name="driver_id" />
+        <field name="planned_departure" />
+        <field name="cash_expected" />
+        <field name="cash_collected" />
+      </list>
+    </field>
+  </record>
+  <record id="view_distribution_trips_form" model="ir.ui.view">
+    <field name="name">distribution.trip.form</field>
+    <field name="model">distribution.trip</field>
+    <field name="arch" type="xml">
+      <form>
+        <header>
+          <button name="action_submit" type="object" string="Submit" class="btn-primary" invisible="state not in ('draft','correction')" />
+          <button name="action_review" type="object" string="Review" class="btn-primary" invisible="state != 'submitted'" />
+          <button name="action_approve" type="object" string="Approve" class="btn-primary" invisible="state != 'reviewed'" />
+          <button name="action_return_correction" type="object" string="Return" invisible="state not in ('submitted','reviewed')" />
+          <button name="action_reject" type="object" string="Reject" invisible="state not in ('submitted','reviewed')" />
+          <button name="action_start_processing" type="object" string="Start Processing" invisible="state != 'approved'" />
+          <button name="action_reconcile" type="object" string="Reconcile" invisible="state != 'processing'" />
+          <button name="action_close" type="object" string="Close" invisible="state not in ('approved','processing','reconciled')" />
+          <button name="action_open_reopen_wizard" type="object" string="Reopen / Reset" groups="workflow_approval.group_workflow_manager" invisible="state == 'draft'" />
+          <field name="state" widget="statusbar" statusbar_visible="draft,submitted,reviewed,approved,processing,reconciled,closed" />
+        </header>
+        <sheet>
+          <div class="oe_button_box" name="button_box">
+            <button type="object" name="action_view_events" class="oe_stat_button" icon="fa-history">
+              <field name="event_count" widget="statinfo" string="Approval Events" />
+            </button>
+          </div>
+          <div class="oe_title">
+            <label for="name" />
+            <h1>
+              <field name="name" readonly="1" />
+            </h1>
+          </div>
+          <group>
+            <group>
+              <field name="process_date" />
+              <field name="company_id" groups="base.group_multi_company" />
+              <field name="region_id" />
+              <field name="site_id" />
+              <field name="warehouse_id" />
+            </group>
+            <group>
+              <field name="initiator_id" />
+              <field name="department_id" />
+              <field name="reviewer_id" />
+              <field name="final_approver_id" />
+              <field name="amount" />
+            </group>
+          </group>
+          <group string="Trip">
+            <group>
+              <field name="route_id" />
+              <field name="vehicle_id" />
+              <field name="driver_id" domain="[('is_distribution_driver','=',True),('active','=',True)]" />
+              <field name="planned_departure" />
+              <field name="actual_departure" />
+              <field name="actual_return" />
+            </group>
+            <group>
+              <field name="odometer_start" />
+              <field name="odometer_end" />
+              <field name="fuel_issued" />
+              <field name="fuel_consumed" />
+              <field name="cash_expected" />
+              <field name="cash_collected" />
+            </group>
+          </group>
+          <field name="stop_ids">
+            <list editable="bottom">
+              <field name="sequence" />
+              <field name="customer_id" />
+              <field name="sale_order_id" />
+              <field name="picking_id" />
+              <field name="planned_arrival" />
+              <field name="geofence_status" />
+              <field name="pod_reference" />
+              <field name="cash_collected" />
+            </list>
+          </field>
+          <notebook>
+            <page string="Approval">
+              <group>
+                <field name="submission_note" readonly="state not in ('draft','correction')" />
+                <field name="review_note" readonly="state != 'submitted'" />
+                <field name="approval_note" readonly="state != 'reviewed'" />
+                <field name="action_reason" placeholder="Required for rejection or return for correction" />
+              </group>
+            </page>
+          </notebook>
+        </sheet>
+        <chatter />
+      </form>
+    </field>
+  </record>
+  <record id="view_distribution_trips_search" model="ir.ui.view">
+    <field name="name">distribution.trip.search</field>
+    <field name="model">distribution.trip</field>
+    <field name="arch" type="xml">
+      <search>
+        <field name="name" />
+        <field name="state" />
+        <field name="site_id" />
+        <field name="initiator_id" />
+        <filter name="my_reviews" string="Awaiting My Review" domain="[('state','=','submitted'),('reviewer_id','=',uid)]" />
+        <filter name="my_approvals" string="Awaiting My Approval" domain="[('state','=','reviewed'),('final_approver_id','=',uid)]" />
+        <filter name="my_requests" string="My Requests" domain="[('initiator_id','=',uid)]" />
+        <filter string="State" name="group_state" context="{'group_by':'state'}" />
+        <filter string="Site" name="group_site" context="{'group_by':'site_id'}" />
+      </search>
+    </field>
+  </record>
+  <record id="view_distribution_trips_graph" model="ir.ui.view">
+    <field name="name">distribution.trip.graph</field>
+    <field name="model">distribution.trip</field>
+    <field name="arch" type="xml">
+      <graph string="Distribution Trips">
+        <field name="state" />
+        <field name="cash_expected" type="measure" />
+        <field name="cash_collected" type="measure" />
+      </graph>
+    </field>
+  </record>
+  <record id="view_distribution_trips_pivot" model="ir.ui.view">
+    <field name="name">distribution.trip.pivot</field>
+    <field name="model">distribution.trip</field>
+    <field name="arch" type="xml">
+      <pivot string="Distribution Trips">
+        <field name="site_id" type="row" />
+        <field name="state" type="col" />
+        <field name="cash_expected" type="measure" />
+        <field name="cash_collected" type="measure" />
+      </pivot>
+    </field>
+  </record>
+  <record id="action_distribution_trips" model="ir.actions.act_window">
+    <field name="name">Distribution Trips</field>
+    <field name="res_model">distribution.trip</field>
+    <field name="view_mode">list,form,graph,pivot</field>
+  </record>
+  <record id="action_distribution_trips_my_actions" model="ir.actions.act_window">
+    <field name="name">My Actions</field>
+    <field name="res_model">distribution.trip</field>
+    <field name="view_mode">list,form</field>
+    <field name="domain">['|',('reviewer_id','=',uid),('final_approver_id','=',uid)]</field>
+  </record>
+  <menuitem id="menu_distribution_trips_root" name="Distribution Trips" sequence="30" groups="distribution_trips.group_distribution_trips_user" />
+  <menuitem id="menu_distribution_trips_dashboard" parent="menu_distribution_trips_root" name="Dashboard / Analysis" action="action_distribution_trips" sequence="5" />
+  <menuitem id="menu_distribution_trips_transactions" parent="menu_distribution_trips_root" name="Transactions" action="action_distribution_trips" sequence="10" />
+  <menuitem id="menu_distribution_trips_my_actions" parent="menu_distribution_trips_root" name="My Actions" action="action_distribution_trips_my_actions" sequence="20" />
+</odoo>

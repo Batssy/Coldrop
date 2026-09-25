@@ -1,0 +1,5 @@
+id,name,model_id/id,group_id/id,perm_read,perm_write,perm_create,perm_unlink
+access_fleet_workshop_user,Fleet Workshop user,model_fleet_workshop_request,fleet_workshop.group_fleet_workshop_user,1,1,1,0
+access_fleet_workshop_reviewer,Fleet Workshop reviewer,model_fleet_workshop_request,fleet_workshop.group_fleet_workshop_reviewer,1,1,1,0
+access_fleet_workshop_approver,Fleet Workshop approver,model_fleet_workshop_request,fleet_workshop.group_fleet_workshop_approver,1,1,1,0
+access_fleet_workshop_manager,Fleet Workshop manager,model_fleet_workshop_request,fleet_workshop.group_fleet_workshop_manager,1,1,1,1

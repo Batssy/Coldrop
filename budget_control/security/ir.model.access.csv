@@ -1,0 +1,7 @@
+id,name,model_id/id,group_id/id,perm_read,perm_write,perm_create,perm_unlink
+access_budget_control_user,Budgets & Profitability user,model_budget_control,budget_control.group_budget_control_user,1,1,1,0
+access_budget_control_reviewer,Budgets & Profitability reviewer,model_budget_control,budget_control.group_budget_control_reviewer,1,1,1,0
+access_budget_control_approver,Budgets & Profitability approver,model_budget_control,budget_control.group_budget_control_approver,1,1,1,0
+access_budget_control_manager,Budgets & Profitability manager,model_budget_control,budget_control.group_budget_control_manager,1,1,1,1
+access_budget_control_budget_control_line_user,budget.control.line user,model_budget_control_line,budget_control.group_budget_control_user,1,1,1,0
+access_budget_control_budget_control_line_manager,budget.control.line manager,model_budget_control_line,budget_control.group_budget_control_manager,1,1,1,1

@@ -1,0 +1,1 @@
+<odoo noupdate="1"><record id="distribution_core.demo_user_executive" model="res.users"><field name="group_ids" eval="[(4, ref('distribution_dashboard.group_dashboard_global_viewer'))]"/></record></odoo>

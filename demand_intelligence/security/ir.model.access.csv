@@ -1,0 +1,5 @@
+id,name,model_id/id,group_id/id,perm_read,perm_write,perm_create,perm_unlink
+access_demand_forecast_user,demand forecast user,model_demand_forecast,demand_intelligence.group_demand_intelligence_user,1,1,1,0
+access_demand_forecast_manager,demand forecast manager,model_demand_forecast,demand_intelligence.group_demand_intelligence_manager,1,1,1,1
+access_demand_forecast_line_user,demand forecast line user,model_demand_forecast_line,demand_intelligence.group_demand_intelligence_user,1,1,1,0
+access_demand_forecast_line_manager,demand forecast line manager,model_demand_forecast_line,demand_intelligence.group_demand_intelligence_manager,1,1,1,1

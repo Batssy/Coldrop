@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="view_budget_control_list" model="ir.ui.view">
+    <field name="name">budget.control.list</field>
+    <field name="model">budget.control</field>
+    <field name="arch" type="xml">
+      <list decoration-warning="state == 'submitted'" decoration-success="state == 'closed'">
+        <field name="name" />
+        <field name="state" />
+        <field name="period_start" />
+        <field name="period_end" />
+        <field name="budget_total" />
+        <field name="actual_total" />
+        <field name="variance_total" />
+      </list>
+    </field>
+  </record>
+  <record id="view_budget_control_form" model="ir.ui.view">
+    <field name="name">budget.control.form</field>
+    <field name="model">budget.control</field>
+    <field name="arch" type="xml">
+      <form>
+        <header>
+          <button name="action_submit" type="object" string="Submit" class="btn-primary" invisible="state not in ('draft','correction')" />
+          <button name="action_review" type="object" string="Review" class="btn-primary" invisible="state != 'submitted'" />
+          <button name="action_approve" type="object" string="Approve" class="btn-primary" invisible="state != 'reviewed'" />
+          <button name="action_return_correction" type="object" string="Return" invisible="state not in ('submitted','reviewed')" />
+          <button name="action_reject" type="object" string="Reject" invisible="state not in ('submitted','reviewed')" />
+          <button name="action_start_processing" type="object" string="Start Processing" invisible="state != 'approved'" />
+          <button name="action_reconcile" type="object" string="Reconcile" invisible="state != 'processing'" />
+          <button name="action_request_closure" type="object" string="Request Closure" class="btn-primary" invisible="state != 'reconciled'" />
+          <button name="action_approve_closure" type="object" string="Approve Closure" class="btn-primary" invisible="state != 'closure_requested'" />
+          <button name="action_open_reopen_wizard" type="object" string="Reopen / Reset" groups="workflow_approval.group_workflow_manager" invisible="state == 'draft'" />
+          <field name="state" widget="statusbar" statusbar_visible="draft,submitted,reviewed,approved,processing,reconciled,closure_requested,closed" />
+        </header>
+        <sheet>
+          <div class="oe_button_box" name="button_box">
+            <button type="object" name="action_view_events" class="oe_stat_button" icon="fa-history">
+              <field name="event_count" widget="statinfo" string="Approval Events" />
+            </button>
+          </div>
+          <div class="oe_title">
+            <label for="name" />
+            <h1>
+              <field name="name" readonly="1" />
+            </h1>
+          </div>
+          <group>
+            <group>
+              <field name="process_date" />
+              <field name="company_id" groups="base.group_multi_company" />
+              <field name="region_id" />
+              <field name="site_id" />
+              <field name="warehouse_id" />
+            </group>
+            <group>
+              <field name="initiator_id" />
+              <field name="department_id" />
+              <field name="reviewer_id" />
+              <field name="final_approver_id" />
+              <field name="amount" />
+            </group>
+          </group>
+          <group string="Budget">
+            <field name="period_start" />
+            <field name="period_end" />
+            <field name="budget_total" />
+            <field name="actual_total" />
+            <field name="variance_total" />
+          </group>
+          <group string="Closure Control">
+            <field name="closure_approver_id" />
+            <field name="closure_note" readonly="state not in ('reconciled','closure_requested')" placeholder="Required final variance and closure explanation" />
+            <field name="closure_requested_at" />
+            <field name="closure_approved_at" />
+          </group>
+          <field name="line_ids">
+            <list editable="bottom">
+              <field name="account_id" />
+              <field name="product_id" />
+              <field name="budget_amount" />
+              <field name="actual_amount" />
+              <field name="variance" />
+            </list>
+          </field>
+          <notebook>
+            <page string="Approval">
+              <group>
+                <field name="submission_note" readonly="state not in ('draft','correction')" />
+                <field name="review_note" readonly="state != 'submitted'" />
+                <field name="approval_note" readonly="state != 'reviewed'" />
+                <field name="action_reason" placeholder="Required for rejection or return for correction" />
+              </group>
+            </page>
+          </notebook>
+        </sheet>
+        <chatter />
+      </form>
+    </field>
+  </record>
+  <record id="view_budget_control_search" model="ir.ui.view">
+    <field name="name">budget.control.search</field>
+    <field name="model">budget.control</field>
+    <field name="arch" type="xml">
+      <search>
+        <field name="name" />
+        <field name="state" />
+        <field name="site_id" />
+        <field name="initiator_id" />
+        <filter name="my_reviews" string="Awaiting My Review" domain="[('state','=','submitted'),('reviewer_id','=',uid)]" />
+        <filter name="my_approvals" string="Awaiting My Approval" domain="[('state','=','reviewed'),('final_approver_id','=',uid)]" />
+        <filter name="my_requests" string="My Requests" domain="[('initiator_id','=',uid)]" />
+        <filter string="State" name="group_state" context="{'group_by':'state'}" />
+        <filter string="Site" name="group_site" context="{'group_by':'site_id'}" />
+      </search>
+    </field>
+  </record>
+  <record id="view_budget_control_graph" model="ir.ui.view">
+    <field name="name">budget.control.graph</field>
+    <field name="model">budget.control</field>
+    <field name="arch" type="xml">
+      <graph string="Budgets &amp; Profitability">
+        <field name="state" />
+        <field name="budget_total" type="measure" />
+        <field name="actual_total" type="measure" />
+        <field name="variance_total" type="measure" />
+      </graph>
+    </field>
+  </record>
+  <record id="view_budget_control_pivot" model="ir.ui.view">
+    <field name="name">budget.control.pivot</field>
+    <field name="model">budget.control</field>
+    <field name="arch" type="xml">
+      <pivot string="Budgets &amp; Profitability">
+        <field name="site_id" type="row" />
+        <field name="state" type="col" />
+        <field name="budget_total" type="measure" />
+        <field name="actual_total" type="measure" />
+        <field name="variance_total" type="measure" />
+      </pivot>
+    </field>
+  </record>
+  <record id="action_budget_control" model="ir.actions.act_window">
+    <field name="name">Budgets &amp; Profitability</field>
+    <field name="res_model">budget.control</field>
+    <field name="view_mode">list,form,graph,pivot</field>
+  </record>
+  <record id="action_budget_control_my_actions" model="ir.actions.act_window">
+    <field name="name">My Actions</field>
+    <field name="res_model">budget.control</field>
+    <field name="view_mode">list,form</field>
+    <field name="domain">['|',('reviewer_id','=',uid),('final_approver_id','=',uid)]</field>
+  </record>
+  <menuitem id="menu_budget_control_root" name="Budgets &amp; Profitability" sequence="30" groups="budget_control.group_budget_control_user" />
+  <menuitem id="menu_budget_control_dashboard" parent="menu_budget_control_root" name="Dashboard / Analysis" action="action_budget_control" sequence="5" />
+  <menuitem id="menu_budget_control_transactions" parent="menu_budget_control_root" name="Transactions" action="action_budget_control" sequence="10" />
+  <menuitem id="menu_budget_control_my_actions" parent="menu_budget_control_root" name="My Actions" action="action_budget_control_my_actions" sequence="20" />
+</odoo>

@@ -1,0 +1,1 @@
+<odoo><record id="seq_distribution_trips" model="ir.sequence"><field name="name">Distribution Trips</field><field name="code">distribution.trip</field><field name="prefix">TRP/%(year)s/</field><field name="padding">5</field></record></odoo>

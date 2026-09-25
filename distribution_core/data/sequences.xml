@@ -1,0 +1,1 @@
+<odoo><record id="seq_generic_distribution" model="ir.sequence"><field name="name">Distribution Generic</field><field name="code">distribution.generic</field><field name="prefix">DST/%(year)s/</field><field name="padding">5</field></record></odoo>

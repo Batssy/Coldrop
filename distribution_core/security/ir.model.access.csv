@@ -1,0 +1,9 @@
+id,name,model_id/id,group_id/id,perm_read,perm_write,perm_create,perm_unlink
+access_region_user,distribution.region user,model_distribution_region,distribution_core.group_distribution_core_user,1,0,0,0
+access_region_manager,distribution.region manager,model_distribution_region,distribution_core.group_distribution_core_manager,1,1,1,1
+access_site_user,distribution.site user,model_distribution_site,distribution_core.group_distribution_core_user,1,0,0,0
+access_site_manager,distribution.site manager,model_distribution_site,distribution_core.group_distribution_core_manager,1,1,1,1
+access_route_user,distribution.route user,model_distribution_route,distribution_core.group_distribution_core_user,1,0,0,0
+access_route_manager,distribution.route manager,model_distribution_route,distribution_core.group_distribution_core_manager,1,1,1,1
+access_subregion_user,distribution.subregion user,model_distribution_subregion,distribution_core.group_distribution_core_user,1,0,0,0
+access_subregion_manager,distribution.subregion manager,model_distribution_subregion,distribution_core.group_distribution_core_manager,1,1,1,1

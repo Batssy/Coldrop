@@ -1,0 +1,1 @@
+<odoo><record id="seq_credit_management" model="ir.sequence"><field name="name">Credit Management</field><field name="code">credit.application</field><field name="prefix">CRD/%(year)s/</field><field name="padding">5</field></record></odoo>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <template id="portal_my_home_distribution" inherit_id="portal.portal_my_home" name="Distribution Portal Entry">
+    <xpath expr="//div[hasclass('o_portal_docs')]" position="inside"><a class="list-group-item list-group-item-action" href="/my/distribution"><span class="fa fa-truck me-2"/>Distribution orders, statements and reorders</a></xpath>
+  </template>
+  <template id="portal_distribution_home" name="Distribution Customer Portal">
+    <t t-call="portal.portal_layout">
+      <t t-set="breadcrumbs_searchbar" t-value="True"/>
+      <div class="container py-3">
+        <h2>Distribution Customer Portal</h2>
+        <div t-if="portal_message" class="alert alert-info" t-out="portal_message"/>
+        <div class="alert alert-light"><strong>Outstanding statement balance:</strong> <span t-out="statement_balance"/></div>
+        <h3>Orders and Reorders</h3>
+        <div class="table-responsive"><table class="table table-sm"><thead><tr><th>Order</th><th>Date</th><th>Status</th><th>Total</th><th>Signed</th><th>Actions</th></tr></thead><tbody>
+          <tr t-foreach="orders" t-as="order"><td t-out="order.name"/><td t-out="order.date_order"/><td t-out="order.state"/><td t-out="order.amount_total"/><td t-out="order.distribution_signed_on or ''"/><td>
+            <form t-if="order.state in ('sale','done')" t-att-action="'/my/distribution/order/%s/reorder' % order.id" method="post" class="d-inline"><input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/><button class="btn btn-sm btn-outline-primary" type="submit">Reorder</button></form>
+            <button t-if="order.state in ('draft','sent','sale') and not order.distribution_portal_approved" class="btn btn-sm btn-primary" type="button" t-att-data-bs-target="'#sign%s' % order.id" data-bs-toggle="collapse">Sign Approval</button>
+            <div t-att-id="'sign%s' % order.id" class="collapse mt-2"><form t-att-action="'/my/distribution/order/%s/accept' % order.id" method="post"><input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/><input class="form-control form-control-sm mb-1" name="signer" placeholder="Signer full name" required="required"/><canvas t-att-id="'canvas%s' % order.id" width="320" height="100" style="border:1px solid #999;touch-action:none"/><input type="hidden" name="signature" t-att-id="'signature%s' % order.id"/><button type="button" class="btn btn-sm btn-secondary" t-att-onclick="&quot;document.getElementById('canvas%s').getContext('2d').clearRect(0,0,320,100)&quot; % order.id">Clear</button><button type="submit" class="btn btn-sm btn-success" t-att-onclick="&quot;document.getElementById('signature%s').value=document.getElementById('canvas%s').toDataURL('image/png')&quot; % (order.id,order.id)">Accept and Sign</button></form></div>
+          </td></tr>
+        </tbody></table></div>
+        <h3>Statement</h3><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Document</th><th>Date</th><th>Total</th><th>Balance</th><th>Status</th></tr></thead><tbody><tr t-foreach="invoices" t-as="invoice"><td t-out="invoice.name"/><td t-out="invoice.invoice_date"/><td t-out="invoice.amount_total_signed"/><td t-out="invoice.amount_residual_signed"/><td t-out="invoice.payment_state"/></tr></tbody></table></div>
+      </div>
+      <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+          document.querySelectorAll('canvas[id^="canvas"]').forEach(function (canvas) {
+            var ctx=canvas.getContext('2d'), drawing=false;
+            function point(event) { var r=canvas.getBoundingClientRect(), p=event.touches ? event.touches[0] : event; return [p.clientX-r.left,p.clientY-r.top]; }
+            function start(event) { drawing=true; var p=point(event); ctx.beginPath(); ctx.moveTo(p[0],p[1]); event.preventDefault(); }
+            function move(event) { if (!drawing) return; var p=point(event); ctx.lineTo(p[0],p[1]); ctx.stroke(); event.preventDefault(); }
+            function stop() { drawing=false; }
+            canvas.addEventListener('mousedown',start); canvas.addEventListener('mousemove',move); canvas.addEventListener('mouseup',stop); canvas.addEventListener('mouseleave',stop); canvas.addEventListener('touchstart',start); canvas.addEventListener('touchmove',move); canvas.addEventListener('touchend',stop);
+          });
+        });
+      </script>
+    </t>
+  </template>
+</odoo>

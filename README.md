@@ -1,2 +1,0 @@
-# Gatekeeper-Odoo
-# Coldrop

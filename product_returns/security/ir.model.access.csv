@@ -1,0 +1,7 @@
+id,name,model_id/id,group_id/id,perm_read,perm_write,perm_create,perm_unlink
+access_product_returns_user,Product Returns user,model_product_return,product_returns.group_product_returns_user,1,1,1,0
+access_product_returns_reviewer,Product Returns reviewer,model_product_return,product_returns.group_product_returns_reviewer,1,1,1,0
+access_product_returns_approver,Product Returns approver,model_product_return,product_returns.group_product_returns_approver,1,1,1,0
+access_product_returns_manager,Product Returns manager,model_product_return,product_returns.group_product_returns_manager,1,1,1,1
+access_product_returns_product_return_line_user,product.return.line user,model_product_return_line,product_returns.group_product_returns_user,1,1,1,0
+access_product_returns_product_return_line_manager,product.return.line manager,model_product_return_line,product_returns.group_product_returns_manager,1,1,1,1

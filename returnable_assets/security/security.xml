@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="module_category_returnable_assets" model="ir.module.category">
+    <field name="name">Broadspace / Returnable Assets</field>
+    <field name="sequence">55</field>
+  </record>
+  <record id="privilege_module_category_returnable_assets" model="res.groups.privilege">
+    <field name="name">Broadspace / Returnable Assets</field>
+    <field name="category_id" ref="module_category_returnable_assets" />
+  </record>
+  <record id="group_returnable_assets_user" model="res.groups">
+    <field name="name">User / Initiator</field>
+    <field name="privilege_id" ref="privilege_module_category_returnable_assets" />
+  </record>
+  <record id="group_returnable_assets_reviewer" model="res.groups">
+    <field name="name">Reviewer</field>
+    <field name="privilege_id" ref="privilege_module_category_returnable_assets" />
+    <field name="implied_ids" eval="[(4, ref('group_returnable_assets_user'))]" />
+  </record>
+  <record id="group_returnable_assets_approver" model="res.groups">
+    <field name="name">Final Approver</field>
+    <field name="privilege_id" ref="privilege_module_category_returnable_assets" />
+    <field name="implied_ids" eval="[(4, ref('group_returnable_assets_reviewer'))]" />
+  </record>
+  <record id="group_returnable_assets_manager" model="res.groups">
+    <field name="name">Manager / Administrator</field>
+    <field name="privilege_id" ref="privilege_module_category_returnable_assets" />
+    <field name="implied_ids" eval="[(4, ref('group_returnable_assets_approver'))]" />
+  </record>
+</odoo>

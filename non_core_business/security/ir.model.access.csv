@@ -1,0 +1,5 @@
+id,name,model_id/id,group_id/id,perm_read,perm_write,perm_create,perm_unlink
+access_non_core_business_user,Non-Core Business user,model_non_core_request,non_core_business.group_non_core_business_user,1,1,1,0
+access_non_core_business_reviewer,Non-Core Business reviewer,model_non_core_request,non_core_business.group_non_core_business_reviewer,1,1,1,0
+access_non_core_business_approver,Non-Core Business approver,model_non_core_request,non_core_business.group_non_core_business_approver,1,1,1,0
+access_non_core_business_manager,Non-Core Business manager,model_non_core_request,non_core_business.group_non_core_business_manager,1,1,1,1

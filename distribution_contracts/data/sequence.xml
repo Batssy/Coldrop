@@ -1,0 +1,1 @@
+<odoo><record id="seq_distribution_contracts" model="ir.sequence"><field name="name">Contracts</field><field name="code">distribution.contract</field><field name="prefix">CTR/%(year)s/</field><field name="padding">5</field></record></odoo>

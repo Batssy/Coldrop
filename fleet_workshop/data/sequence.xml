@@ -1,0 +1,1 @@
+<odoo><record id="seq_fleet_workshop" model="ir.sequence"><field name="name">Fleet Workshop</field><field name="code">fleet.workshop.request</field><field name="prefix">MNT/%(year)s/</field><field name="padding">5</field></record></odoo>

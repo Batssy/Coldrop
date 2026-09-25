@@ -1,0 +1,1 @@
+<odoo><record id="seq_approval_matrix" model="ir.sequence"><field name="name">Approval Matrix</field><field name="code">approval.matrix</field><field name="prefix">APR/%(year)s/</field><field name="padding">5</field></record></odoo>

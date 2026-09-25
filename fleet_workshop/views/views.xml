@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="view_fleet_workshop_list" model="ir.ui.view">
+    <field name="name">fleet.workshop.request.list</field>
+    <field name="model">fleet.workshop.request</field>
+    <field name="arch" type="xml">
+      <list decoration-warning="state == 'submitted'" decoration-success="state == 'closed'">
+        <field name="name" />
+        <field name="state" />
+        <field name="vehicle_id" />
+        <field name="severity" />
+        <field name="estimated_cost" />
+        <field name="service_log_id" />
+      </list>
+    </field>
+  </record>
+  <record id="view_fleet_workshop_form" model="ir.ui.view">
+    <field name="name">fleet.workshop.request.form</field>
+    <field name="model">fleet.workshop.request</field>
+    <field name="arch" type="xml">
+      <form>
+        <header>
+          <button name="action_submit" type="object" string="Submit" class="btn-primary" invisible="state not in ('draft','correction')" />
+          <button name="action_review" type="object" string="Review" class="btn-primary" invisible="state != 'submitted'" />
+          <button name="action_approve" type="object" string="Approve" class="btn-primary" invisible="state != 'reviewed'" />
+          <button name="action_return_correction" type="object" string="Return" invisible="state not in ('submitted','reviewed')" />
+          <button name="action_reject" type="object" string="Reject" invisible="state not in ('submitted','reviewed')" />
+          <button name="action_start_processing" type="object" string="Start Processing" invisible="state != 'approved'" />
+          <button name="action_reconcile" type="object" string="Reconcile" invisible="state != 'processing'" />
+          <button name="action_close" type="object" string="Close" invisible="state not in ('approved','processing','reconciled')" />
+          <button name="action_open_reopen_wizard" type="object" string="Reopen / Reset" groups="workflow_approval.group_workflow_manager" invisible="state == 'draft'" />
+          <field name="state" widget="statusbar" statusbar_visible="draft,submitted,reviewed,approved,processing,reconciled,closed" />
+        </header>
+        <sheet>
+          <div class="oe_button_box" name="button_box">
+            <button type="object" name="action_view_events" class="oe_stat_button" icon="fa-history">
+              <field name="event_count" widget="statinfo" string="Approval Events" />
+            </button>
+          </div>
+          <div class="oe_title">
+            <label for="name" />
+            <h1>
+              <field name="name" readonly="1" />
+            </h1>
+          </div>
+          <group>
+            <group>
+              <field name="process_date" />
+              <field name="company_id" groups="base.group_multi_company" />
+              <field name="region_id" />
+              <field name="site_id" />
+              <field name="warehouse_id" />
+            </group>
+            <group>
+              <field name="initiator_id" />
+              <field name="department_id" />
+              <field name="reviewer_id" />
+              <field name="final_approver_id" />
+              <field name="amount" />
+            </group>
+          </group>
+          <group string="Maintenance">
+            <field name="vehicle_id" />
+            <field name="reported_by_id" />
+            <field name="severity" />
+            <field name="estimated_cost" />
+            <field name="service_log_id" />
+          </group>
+          <field name="defect_description" />
+          <field name="diagnosis" />
+          <button name="action_log_service" type="object" string="Create Approved Service Log" class="btn-primary" invisible="state != 'approved' or service_log_id" />
+          <notebook>
+            <page string="Approval">
+              <group>
+                <field name="submission_note" readonly="state not in ('draft','correction')" />
+                <field name="review_note" readonly="state != 'submitted'" />
+                <field name="approval_note" readonly="state != 'reviewed'" />
+                <field name="action_reason" placeholder="Required for rejection or return for correction" />
+              </group>
+            </page>
+          </notebook>
+        </sheet>
+        <chatter />
+      </form>
+    </field>
+  </record>
+  <record id="view_fleet_workshop_search" model="ir.ui.view">
+    <field name="name">fleet.workshop.request.search</field>
+    <field name="model">fleet.workshop.request</field>
+    <field name="arch" type="xml">
+      <search>
+        <field name="name" />
+        <field name="state" />
+        <field name="site_id" />
+        <field name="initiator_id" />
+        <filter name="my_reviews" string="Awaiting My Review" domain="[('state','=','submitted'),('reviewer_id','=',uid)]" />
+        <filter name="my_approvals" string="Awaiting My Approval" domain="[('state','=','reviewed'),('final_approver_id','=',uid)]" />
+        <filter name="my_requests" string="My Requests" domain="[('initiator_id','=',uid)]" />
+        <filter string="State" name="group_state" context="{'group_by':'state'}" />
+        <filter string="Site" name="group_site" context="{'group_by':'site_id'}" />
+      </search>
+    </field>
+  </record>
+  <record id="view_fleet_workshop_graph" model="ir.ui.view">
+    <field name="name">fleet.workshop.request.graph</field>
+    <field name="model">fleet.workshop.request</field>
+    <field name="arch" type="xml">
+      <graph string="Fleet Workshop">
+        <field name="state" />
+        <field name="amount" type="measure" />
+      </graph>
+    </field>
+  </record>
+  <record id="view_fleet_workshop_pivot" model="ir.ui.view">
+    <field name="name">fleet.workshop.request.pivot</field>
+    <field name="model">fleet.workshop.request</field>
+    <field name="arch" type="xml">
+      <pivot string="Fleet Workshop">
+        <field name="site_id" type="row" />
+        <field name="state" type="col" />
+        <field name="amount" type="measure" />
+      </pivot>
+    </field>
+  </record>
+  <record id="action_fleet_workshop" model="ir.actions.act_window">
+    <field name="name">Fleet Workshop</field>
+    <field name="res_model">fleet.workshop.request</field>
+    <field name="view_mode">list,form,graph,pivot</field>
+  </record>
+  <record id="action_fleet_workshop_my_actions" model="ir.actions.act_window">
+    <field name="name">My Actions</field>
+    <field name="res_model">fleet.workshop.request</field>
+    <field name="view_mode">list,form</field>
+    <field name="domain">['|',('reviewer_id','=',uid),('final_approver_id','=',uid)]</field>
+  </record>
+  <menuitem id="menu_fleet_workshop_root" name="Fleet Workshop" sequence="30" groups="fleet_workshop.group_fleet_workshop_user" />
+  <menuitem id="menu_fleet_workshop_dashboard" parent="menu_fleet_workshop_root" name="Dashboard / Analysis" action="action_fleet_workshop" sequence="5" />
+  <menuitem id="menu_fleet_workshop_transactions" parent="menu_fleet_workshop_root" name="Transactions" action="action_fleet_workshop" sequence="10" />
+  <menuitem id="menu_fleet_workshop_my_actions" parent="menu_fleet_workshop_root" name="My Actions" action="action_fleet_workshop_my_actions" sequence="20" />
+</odoo>

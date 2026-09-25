@@ -1,0 +1,1 @@
+<odoo><record id="seq_cash_control" model="ir.sequence"><field name="name">Cash &amp; Collections</field><field name="code">cash.collection</field><field name="prefix">CSH/%(year)s/</field><field name="padding">5</field></record></odoo>

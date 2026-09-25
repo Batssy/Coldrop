@@ -1,0 +1,1 @@
+<odoo><record id="seq_site_security" model="ir.sequence"><field name="name">Site &amp; Security</field><field name="code">site.access.request</field><field name="prefix">SEC/%(year)s/</field><field name="padding">5</field></record></odoo>

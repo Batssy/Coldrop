@@ -1,0 +1,1 @@
+<odoo><record id="seq_demand_forecast" model="ir.sequence"><field name="name">Demand Forecast</field><field name="code">demand.forecast</field><field name="prefix">DFC/%(year)s/</field><field name="padding">5</field></record></odoo>

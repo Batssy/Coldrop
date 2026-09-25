@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="view_sales_commitment_control_list" model="ir.ui.view">
+    <field name="name">sales.commitment.list</field>
+    <field name="model">sales.commitment</field>
+    <field name="arch" type="xml">
+      <list decoration-warning="state == 'submitted'" decoration-success="state == 'closed'">
+        <field name="name" />
+        <field name="state" />
+        <field name="customer_id" />
+        <field name="committed_value" />
+        <field name="released_value" />
+        <field name="delivered_value" />
+        <field name="remaining_value" />
+      </list>
+    </field>
+  </record>
+  <record id="view_sales_commitment_control_form" model="ir.ui.view">
+    <field name="name">sales.commitment.form</field>
+    <field name="model">sales.commitment</field>
+    <field name="arch" type="xml">
+      <form>
+        <header>
+          <button name="action_submit" type="object" string="Submit" class="btn-primary" invisible="state not in ('draft','correction')" />
+          <button name="action_review" type="object" string="Review" class="btn-primary" invisible="state != 'submitted'" />
+          <button name="action_approve" type="object" string="Approve" class="btn-primary" invisible="state != 'reviewed'" />
+          <button name="action_return_correction" type="object" string="Return" invisible="state not in ('submitted','reviewed')" />
+          <button name="action_reject" type="object" string="Reject" invisible="state not in ('submitted','reviewed')" />
+          <button name="action_start_processing" type="object" string="Start Processing" invisible="state != 'approved'" />
+          <button name="action_reconcile" type="object" string="Reconcile" invisible="state != 'processing'" />
+          <button name="action_close" type="object" string="Close" invisible="state not in ('approved','processing','reconciled')" />
+          <button name="action_open_reopen_wizard" type="object" string="Reopen / Reset" groups="workflow_approval.group_workflow_manager" invisible="state == 'draft'" />
+          <field name="state" widget="statusbar" statusbar_visible="draft,submitted,reviewed,approved,processing,reconciled,closed" />
+        </header>
+        <sheet>
+          <div class="oe_button_box" name="button_box">
+            <button type="object" name="action_view_events" class="oe_stat_button" icon="fa-history">
+              <field name="event_count" widget="statinfo" string="Approval Events" />
+            </button>
+          </div>
+          <div class="oe_title">
+            <label for="name" />
+            <h1>
+              <field name="name" readonly="1" />
+            </h1>
+          </div>
+          <group>
+            <group>
+              <field name="process_date" />
+              <field name="company_id" groups="base.group_multi_company" />
+              <field name="region_id" />
+              <field name="site_id" />
+              <field name="warehouse_id" />
+            </group>
+            <group>
+              <field name="initiator_id" />
+              <field name="department_id" />
+              <field name="reviewer_id" />
+              <field name="final_approver_id" />
+              <field name="amount" />
+            </group>
+          </group>
+          <group string="Commitment">
+            <group>
+              <field name="customer_id" />
+              <field name="start_date" />
+              <field name="end_date" />
+              <field name="commitment_type" />
+              <field name="payment_term_id" />
+            </group>
+            <group>
+              <field name="committed_value" />
+              <field name="released_value" />
+              <field name="delivered_value" />
+              <field name="remaining_value" />
+            </group>
+          </group>
+          <notebook>
+            <page string="SKU Commitments">
+              <field name="line_ids">
+                <list editable="bottom">
+                  <field name="product_id" />
+                  <field name="committed_qty" />
+                  <field name="unit_price" />
+                </list>
+              </field>
+            </page>
+            <page string="Delivery Releases">
+              <field name="release_ids">
+                <list>
+                  <field name="name" />
+                  <field name="requested_date" />
+                  <field name="sale_order_id" />
+                  <field name="state" />
+                </list>
+              </field>
+            </page>
+          </notebook>
+          <notebook>
+            <page string="Approval">
+              <group>
+                <field name="submission_note" readonly="state not in ('draft','correction')" />
+                <field name="review_note" readonly="state != 'submitted'" />
+                <field name="approval_note" readonly="state != 'reviewed'" />
+                <field name="action_reason" placeholder="Required for rejection or return for correction" />
+              </group>
+            </page>
+          </notebook>
+        </sheet>
+        <chatter />
+      </form>
+    </field>
+  </record>
+  <record id="view_sales_commitment_control_search" model="ir.ui.view">
+    <field name="name">sales.commitment.search</field>
+    <field name="model">sales.commitment</field>
+    <field name="arch" type="xml">
+      <search>
+        <field name="name" />
+        <field name="state" />
+        <field name="site_id" />
+        <field name="initiator_id" />
+        <filter name="my_reviews" string="Awaiting My Review" domain="[('state','=','submitted'),('reviewer_id','=',uid)]" />
+        <filter name="my_approvals" string="Awaiting My Approval" domain="[('state','=','reviewed'),('final_approver_id','=',uid)]" />
+        <filter name="my_requests" string="My Requests" domain="[('initiator_id','=',uid)]" />
+        <filter string="State" name="group_state" context="{'group_by':'state'}" />
+        <filter string="Site" name="group_site" context="{'group_by':'site_id'}" />
+      </search>
+    </field>
+  </record>
+  <record id="view_sales_commitment_control_graph" model="ir.ui.view">
+    <field name="name">sales.commitment.graph</field>
+    <field name="model">sales.commitment</field>
+    <field name="arch" type="xml">
+      <graph string="Sales Commitments">
+        <field name="state" />
+        <field name="committed_value" type="measure" />
+        <field name="released_value" type="measure" />
+        <field name="delivered_value" type="measure" />
+        <field name="remaining_value" type="measure" />
+      </graph>
+    </field>
+  </record>
+  <record id="view_sales_commitment_control_pivot" model="ir.ui.view">
+    <field name="name">sales.commitment.pivot</field>
+    <field name="model">sales.commitment</field>
+    <field name="arch" type="xml">
+      <pivot string="Sales Commitments">
+        <field name="site_id" type="row" />
+        <field name="state" type="col" />
+        <field name="committed_value" type="measure" />
+        <field name="released_value" type="measure" />
+        <field name="delivered_value" type="measure" />
+        <field name="remaining_value" type="measure" />
+      </pivot>
+    </field>
+  </record>
+  <record id="action_sales_commitment_control" model="ir.actions.act_window">
+    <field name="name">Sales Commitments</field>
+    <field name="res_model">sales.commitment</field>
+    <field name="view_mode">list,form,graph,pivot</field>
+  </record>
+  <record id="action_sales_commitment_control_my_actions" model="ir.actions.act_window">
+    <field name="name">My Actions</field>
+    <field name="res_model">sales.commitment</field>
+    <field name="view_mode">list,form</field>
+    <field name="domain">['|',('reviewer_id','=',uid),('final_approver_id','=',uid)]</field>
+  </record>
+  <menuitem id="menu_sales_commitment_control_root" name="Sales Commitments" sequence="30" groups="sales_commitment_control.group_sales_commitment_control_user" />
+  <menuitem id="menu_sales_commitment_control_dashboard" parent="menu_sales_commitment_control_root" name="Dashboard / Analysis" action="action_sales_commitment_control" sequence="5" />
+  <menuitem id="menu_sales_commitment_control_transactions" parent="menu_sales_commitment_control_root" name="Transactions" action="action_sales_commitment_control" sequence="10" />
+  <menuitem id="menu_sales_commitment_control_my_actions" parent="menu_sales_commitment_control_root" name="My Actions" action="action_sales_commitment_control_my_actions" sequence="20" />
+  <record id="view_sales_delivery_release_list" model="ir.ui.view">
+    <field name="name">sales.delivery.release.list</field>
+    <field name="model">sales.delivery.release</field>
+    <field name="arch" type="xml">
+      <list>
+        <field name="name" />
+        <field name="commitment_id" />
+        <field name="requested_date" />
+        <field name="sale_order_id" />
+        <field name="state" />
+      </list>
+    </field>
+  </record>
+  <record id="view_sales_delivery_release_form" model="ir.ui.view">
+    <field name="name">sales.delivery.release.form</field>
+    <field name="model">sales.delivery.release</field>
+    <field name="arch" type="xml">
+      <form>
+        <header>
+          <button name="action_create_sale_order" type="object" string="Create Sales Order" class="btn-primary" invisible="sale_order_id" />
+          <field name="state" widget="statusbar" />
+        </header>
+        <sheet>
+          <group>
+            <field name="name" />
+            <field name="commitment_id" />
+            <field name="requested_date" />
+            <field name="sale_order_id" />
+          </group>
+          <field name="line_ids">
+            <list editable="bottom">
+              <field name="product_id" />
+              <field name="quantity" />
+              <field name="unit_price" />
+            </list>
+          </field>
+        </sheet>
+      </form>
+    </field>
+  </record>
+  <record id="action_sales_delivery_releases" model="ir.actions.act_window">
+    <field name="name">Delivery Releases</field>
+    <field name="res_model">sales.delivery.release</field>
+    <field name="view_mode">list,form</field>
+  </record>
+  <menuitem id="menu_sales_delivery_releases" parent="menu_sales_commitment_control_root" name="Delivery Releases" action="action_sales_delivery_releases" sequence="15" />
+</odoo>

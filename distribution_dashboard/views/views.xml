@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="view_distribution_dashboard_form" model="ir.ui.view">
+    <field name="name">distribution.dashboard.form</field><field name="model">distribution.dashboard</field>
+    <field name="arch" type="xml"><form create="0" edit="0"><sheet><div class="oe_title"><h1>Distribution Control Tower</h1></div><group><field name="company_id"/><field name="site_id"/></group>
+      <group string="Monthly Sales Performance" col="4">
+        <button name="action_month_sales" type="object" class="oe_stat_button" icon="fa-line-chart"><field name="monthly_sales_actual" widget="statinfo" string="Month Sales"/></button>
+        <div class="oe_stat_button"><field name="monthly_sales_target" widget="statinfo" string="Month Target"/></div>
+        <div class="oe_stat_button"><field name="monthly_target_achievement" widget="percentage" string="Achievement"/></div>
+        <button name="action_new_customers" type="object" class="oe_stat_button" icon="fa-user-plus"><field name="new_customers_month" widget="statinfo" string="New Customers Month"/></button>
+        <div class="oe_stat_button"><field name="new_customers_quarter" widget="statinfo" string="New Customers Quarter"/></div>
+      </group>
+      <group string="Sales Champions"><field name="sales_champion_user_id"/><field name="previous_champion_user_id"/></group>
+      <group string="Operational Control" col="4">
+        <button name="action_purchase" type="object" class="oe_stat_button" icon="fa-truck"><field name="purchase_commitment" widget="statinfo" string="Purchase Commitment"/></button>
+        <button name="action_sales" type="object" class="oe_stat_button" icon="fa-shopping-cart"><field name="sales_commitment" widget="statinfo" string="Sales Commitment"/></button>
+        <button name="action_returnables" type="object" class="oe_stat_button" icon="fa-recycle"><field name="returnables_value" widget="statinfo" string="Returnables Value"/></button>
+        <button name="action_cash" type="object" class="oe_stat_button" icon="fa-money"><field name="cash_unreconciled" widget="statinfo" string="Unreconciled Cash"/></button>
+        <button name="action_returns" type="object" class="oe_stat_button" icon="fa-undo"><field name="product_returns_open" widget="statinfo" string="Open Returns"/></button>
+        <button name="action_trips" type="object" class="oe_stat_button" icon="fa-road"><field name="active_trips" widget="statinfo" string="Active Trips"/></button>
+        <div class="oe_stat_button"><field name="pending_approvals" widget="statinfo" string="Approvals Pending"/></div>
+        <div class="oe_stat_button"><field name="purchase_recommended_qty" widget="statinfo" string="Suggested Purchase Qty"/></div>
+      </group>
+    </sheet></form></field>
+  </record>
+  <record id="view_sales_performance_target_list" model="ir.ui.view"><field name="name">sales.performance.target.list</field><field name="model">sales.performance.target</field><field name="arch" type="xml"><list><field name="period_start"/><field name="period_end"/><field name="salesperson_id"/><field name="site_id"/><field name="target_amount"/><field name="target_new_customers"/><field name="active"/></list></field></record>
+  <record id="view_sales_performance_target_form" model="ir.ui.view"><field name="name">sales.performance.target.form</field><field name="model">sales.performance.target</field><field name="arch" type="xml"><form><sheet><div class="oe_title"><h1><field name="name"/></h1></div><group><group><field name="company_id"/><field name="site_id"/><field name="salesperson_id"/></group><group><field name="period_start"/><field name="period_end"/><field name="target_amount"/><field name="target_new_customers"/><field name="active"/></group></group></sheet></form></field></record>
+  <record id="view_sales_performance_target_graph" model="ir.ui.view"><field name="name">sales.performance.target.graph</field><field name="model">sales.performance.target</field><field name="arch" type="xml"><graph string="Monthly Sales Targets"><field name="salesperson_id"/><field name="target_amount" type="measure"/><field name="target_new_customers" type="measure"/></graph></field></record>
+  <record id="view_sales_performance_target_pivot" model="ir.ui.view"><field name="name">sales.performance.target.pivot</field><field name="model">sales.performance.target</field><field name="arch" type="xml"><pivot string="Monthly Sales Targets"><field name="salesperson_id" type="row"/><field name="period_start" interval="month" type="col"/><field name="target_amount" type="measure"/><field name="target_new_customers" type="measure"/></pivot></field></record>
+
+  <record id="server_action_open_dashboard" model="ir.actions.server"><field name="name">Distribution Control Tower</field><field name="model_id" ref="model_distribution_dashboard"/><field name="state">code</field><field name="code">action = env['distribution.dashboard'].action_open_dashboard()</field></record>
+  <record id="action_sales_performance_targets" model="ir.actions.act_window"><field name="name">Monthly Sales Targets</field><field name="res_model">sales.performance.target</field><field name="view_mode">list,form,pivot,graph</field></record>
+  <menuitem id="menu_distribution_dashboard_root" name="Distribution Control Tower" sequence="5" groups="distribution_dashboard.group_dashboard_global_viewer"/>
+  <menuitem id="menu_distribution_dashboard_open" parent="menu_distribution_dashboard_root" name="Global Dashboard" action="server_action_open_dashboard"/>
+  <menuitem id="menu_sales_performance_targets" parent="menu_distribution_dashboard_root" name="Monthly Sales Targets" action="action_sales_performance_targets" sequence="20" groups="distribution_dashboard.group_dashboard_manager"/>
+
+  <record id="action_report_purchase_orders" model="ir.actions.act_window"><field name="name">Purchase Order Analysis</field><field name="res_model">purchase.order</field><field name="view_mode">list,pivot,graph,form</field><field name="context">{'create': False}</field></record>
+  <record id="action_report_stock_moves" model="ir.actions.act_window"><field name="name">Inventory Movement Analysis</field><field name="res_model">stock.move</field><field name="view_mode">list,pivot,graph,form</field><field name="context">{'create': False}</field></record>
+  <record id="action_report_sales_orders" model="ir.actions.act_window"><field name="name">Sales Order Analysis</field><field name="res_model">sale.order</field><field name="view_mode">list,pivot,graph,form</field><field name="context">{'create': False}</field></record>
+  <record id="action_report_account_moves" model="ir.actions.act_window"><field name="name">Accounting Entries</field><field name="res_model">account.move</field><field name="view_mode">list,pivot,graph,form</field><field name="context">{'create': False}</field></record>
+  <record id="action_report_customer_returns" model="ir.actions.act_window"><field name="name">Customer Returns Register</field><field name="res_model">product.return</field><field name="view_mode">list,pivot,graph,form</field><field name="domain">[('return_direction','=','customer')]</field><field name="context">{'create': False}</field></record>
+  <record id="action_report_vendor_returns" model="ir.actions.act_window"><field name="name">Vendor Returns Register</field><field name="res_model">product.return</field><field name="view_mode">list,pivot,graph,form</field><field name="domain">[('return_direction','=','vendor')]</field><field name="context">{'create': False}</field></record>
+  <menuitem id="menu_distribution_reports" parent="menu_distribution_dashboard_root" name="Reports" sequence="30"/>
+  <menuitem id="menu_report_purchase" parent="menu_distribution_reports" name="Purchase" action="action_report_purchase_orders" sequence="10"/>
+  <menuitem id="menu_report_inventory" parent="menu_distribution_reports" name="Inventory" action="action_report_stock_moves" sequence="20"/>
+  <menuitem id="menu_report_sales" parent="menu_distribution_reports" name="Sales" action="action_report_sales_orders" sequence="30"/>
+  <menuitem id="menu_report_accounting" parent="menu_distribution_reports" name="Accounting" action="action_report_account_moves" sequence="40"/>
+  <menuitem id="menu_report_customer_returns" parent="menu_distribution_reports" name="Customer Returns" action="action_report_customer_returns" sequence="50"/>
+  <menuitem id="menu_report_vendor_returns" parent="menu_distribution_reports" name="Vendor Returns" action="action_report_vendor_returns" sequence="60"/>
+</odoo>

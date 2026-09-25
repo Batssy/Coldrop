@@ -1,0 +1,1 @@
+<odoo><record id="seq_product_returns" model="ir.sequence"><field name="name">Product Returns</field><field name="code">product.return</field><field name="prefix">RET/%(year)s/</field><field name="padding">5</field></record></odoo>
