@@ -1,1 +1,54 @@
-<odoo noupdate="1"><record id="distribution_core.demo_user_executive" model="res.users"><field name="group_ids" eval="[(4, ref('distribution_dashboard.group_dashboard_global_viewer'))]"/></record></odoo>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+  <!-- Access for the demo users -->
+  <record id="distribution_core.demo_user_executive" model="res.users">
+    <field name="group_ids" eval="[(4, ref('distribution_dashboard.group_dashboard_global_viewer'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('distribution_dashboard.group_dashboard_global_viewer'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_senior_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('distribution_dashboard.group_dashboard_global_viewer'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_workflow_manager" model="res.users">
+    <field name="group_ids" eval="[(4, ref('distribution_dashboard.group_dashboard_manager'))]"/>
+  </record>
+
+  <!-- Monthly sales targets for the Malindi sales team -->
+  <record id="demo_target_sales_rep_current" model="sales.performance.target">
+    <field name="name">Malindi Central: this month</field>
+    <field name="site_id" ref="distribution_core.demo_site_malindi"/>
+    <field name="salesperson_id" ref="distribution_core.demo_user_sales_rep"/>
+    <field name="period_start" eval="DateTime.today().replace(day=1).strftime('%Y-%m-%d')"/>
+    <field name="period_end" eval="(DateTime.today().replace(day=1) + relativedelta(months=1) - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+    <field name="target_amount">600000</field>
+    <field name="target_new_customers">3</field>
+  </record>
+  <record id="demo_target_sales_agent_current" model="sales.performance.target">
+    <field name="name">Watamu &amp; Gede: this month</field>
+    <field name="site_id" ref="distribution_core.demo_site_malindi"/>
+    <field name="salesperson_id" ref="distribution_core.demo_user_sales_agent"/>
+    <field name="period_start" eval="DateTime.today().replace(day=1).strftime('%Y-%m-%d')"/>
+    <field name="period_end" eval="(DateTime.today().replace(day=1) + relativedelta(months=1) - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+    <field name="target_amount">200000</field>
+    <field name="target_new_customers">2</field>
+  </record>
+  <record id="demo_target_sales_rep_previous" model="sales.performance.target">
+    <field name="name">Malindi Central: last month</field>
+    <field name="site_id" ref="distribution_core.demo_site_malindi"/>
+    <field name="salesperson_id" ref="distribution_core.demo_user_sales_rep"/>
+    <field name="period_start" eval="(DateTime.today().replace(day=1) - relativedelta(months=1)).strftime('%Y-%m-%d')"/>
+    <field name="period_end" eval="(DateTime.today().replace(day=1) - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+    <field name="target_amount">550000</field>
+    <field name="target_new_customers">2</field>
+  </record>
+  <record id="demo_target_sales_agent_previous" model="sales.performance.target">
+    <field name="name">Watamu &amp; Gede: last month</field>
+    <field name="site_id" ref="distribution_core.demo_site_malindi"/>
+    <field name="salesperson_id" ref="distribution_core.demo_user_sales_agent"/>
+    <field name="period_start" eval="(DateTime.today().replace(day=1) - relativedelta(months=1)).strftime('%Y-%m-%d')"/>
+    <field name="period_end" eval="(DateTime.today().replace(day=1) - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+    <field name="target_amount">180000</field>
+    <field name="target_new_customers">1</field>
+  </record>
+</odoo>

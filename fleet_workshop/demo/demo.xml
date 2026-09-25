@@ -1,1 +1,111 @@
-<odoo noupdate="1"><record id="distribution_core.demo_user_initiator" model="res.users"><field name="group_ids" eval="[(4, ref('fleet_workshop.group_fleet_workshop_user'))]"/></record><record id="distribution_core.demo_user_reviewer" model="res.users"><field name="group_ids" eval="[(4, ref('fleet_workshop.group_fleet_workshop_reviewer'))]"/></record><record id="distribution_core.demo_user_approver" model="res.users"><field name="group_ids" eval="[(4, ref('fleet_workshop.group_fleet_workshop_approver'))]"/></record></odoo>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+  <!-- Access for the demo users -->
+  <record id="distribution_core.demo_user_initiator" model="res.users">
+    <field name="group_ids" eval="[(4, ref('fleet_workshop.group_fleet_workshop_user'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_reviewer" model="res.users">
+    <field name="group_ids" eval="[(4, ref('fleet_workshop.group_fleet_workshop_reviewer'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('fleet_workshop.group_fleet_workshop_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_senior_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('fleet_workshop.group_fleet_workshop_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_workflow_manager" model="res.users">
+    <field name="group_ids" eval="[(4, ref('fleet_workshop.group_fleet_workshop_manager'))]"/>
+  </record>
+
+  <!-- Workshop fleet -->
+  <record id="demo_fleet_brand_fuso" model="fleet.vehicle.model.brand">
+    <field name="name">Demo Mitsubishi Fuso</field>
+  </record>
+  <record id="demo_fleet_model_canter" model="fleet.vehicle.model">
+    <field name="name">Canter 3.5-Tonne Delivery Truck</field>
+    <field name="brand_id" ref="demo_fleet_brand_fuso"/>
+  </record>
+  <record id="demo_vehicle_canter_1" model="fleet.vehicle">
+    <field name="model_id" ref="demo_fleet_model_canter"/>
+    <field name="license_plate">KDC 303C</field>
+  </record>
+  <record id="demo_vehicle_canter_2" model="fleet.vehicle">
+    <field name="model_id" ref="demo_fleet_model_canter"/>
+    <field name="license_plate">KDD 404D</field>
+  </record>
+  <record id="demo_vehicle_canter_3" model="fleet.vehicle">
+    <field name="model_id" ref="demo_fleet_model_canter"/>
+    <field name="license_plate">KDE 505E</field>
+  </record>
+
+  <!-- Brake repair: approved, completed and closed -->
+  <record id="demo_workshop_brakes" model="fleet.workshop.request" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_logistics"/>
+    <field name="cost_center">MAL-LOG</field>
+    <field name="process_date" eval="(DateTime.today() - timedelta(days=12)).strftime('%Y-%m-%d')"/>
+    <field name="vehicle_id" ref="demo_vehicle_canter_1"/>
+    <field name="reported_by_id" ref="distribution_core.demo_employee_driver_1"/>
+    <field name="severity">high</field>
+    <field name="defect_description">Grinding noise from the front brakes and a longer stopping distance when fully loaded.</field>
+    <field name="diagnosis">Front brake pads worn to the backing plate, one disc scored. Replace pads and both front discs.</field>
+    <field name="estimated_cost">45000</field>
+    <field name="amount">45000</field>
+  </record>
+
+  <!-- Engine overhaul (major repair): reviewed, waiting for the senior approver -->
+  <record id="demo_workshop_engine" model="fleet.workshop.request" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_logistics"/>
+    <field name="cost_center">MAL-LOG</field>
+    <field name="vehicle_id" ref="demo_vehicle_canter_2"/>
+    <field name="reported_by_id" ref="distribution_core.demo_employee_driver_2"/>
+    <field name="severity">critical</field>
+    <field name="defect_description">Engine overheating on the Watamu hill section; white smoke from the exhaust.</field>
+    <field name="diagnosis">Head gasket failure with coolant contamination. Top overhaul and radiator recore recommended.</field>
+    <field name="estimated_cost">280000</field>
+    <field name="amount">280000</field>
+  </record>
+
+  <!-- Suspension repair: approved, ready to log the service -->
+  <record id="demo_workshop_suspension" model="fleet.workshop.request" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_logistics"/>
+    <field name="cost_center">MAL-LOG</field>
+    <field name="vehicle_id" ref="demo_vehicle_canter_3"/>
+    <field name="reported_by_id" ref="distribution_core.demo_employee_driver_1"/>
+    <field name="severity">medium</field>
+    <field name="defect_description">Rear leaf spring sagging on the left side under load.</field>
+    <field name="diagnosis">Two broken leaves on the rear left spring pack. Replace the spring pack and U-bolts.</field>
+    <field name="estimated_cost">62000</field>
+    <field name="amount">62000</field>
+  </record>
+
+  <!-- Tyre replacement: submitted -->
+  <record id="demo_workshop_tyres" model="fleet.workshop.request" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_logistics"/>
+    <field name="cost_center">MAL-LOG</field>
+    <field name="vehicle_id" ref="demo_vehicle_canter_1"/>
+    <field name="reported_by_id" ref="distribution_core.demo_employee_driver_1"/>
+    <field name="severity">low</field>
+    <field name="defect_description">Rear tyres approaching the minimum legal tread depth.</field>
+    <field name="estimated_cost">24000</field>
+    <field name="amount">24000</field>
+  </record>
+
+  <!-- Lighting fault: draft -->
+  <record id="demo_workshop_lights" model="fleet.workshop.request" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_logistics"/>
+    <field name="cost_center">MAL-LOG</field>
+    <field name="vehicle_id" ref="demo_vehicle_canter_3"/>
+    <field name="severity">medium</field>
+    <field name="defect_description">Left indicator and reverse alarm not working.</field>
+    <field name="estimated_cost">8500</field>
+    <field name="amount">8500</field>
+  </record>
+
+  <!-- Workflow -->
+  <function model="fleet.workshop.request" name="action_submit" eval="[[ref('demo_workshop_brakes'), ref('demo_workshop_engine'), ref('demo_workshop_suspension'), ref('demo_workshop_tyres')]]" uid="distribution_core.demo_user_initiator"/>
+  <function model="fleet.workshop.request" name="action_review" eval="[[ref('demo_workshop_brakes'), ref('demo_workshop_suspension')]]" uid="distribution_core.demo_user_reviewer"/>
+  <function model="fleet.workshop.request" name="action_approve" eval="[[ref('demo_workshop_brakes'), ref('demo_workshop_suspension')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="fleet.workshop.request" name="action_close" eval="[[ref('demo_workshop_brakes')]]" uid="distribution_core.demo_user_approver"/>
+  <!-- Major repair (100k and above): approver reviews, senior approver signs off -->
+  <function model="fleet.workshop.request" name="action_review" eval="[[ref('demo_workshop_engine')]]" uid="distribution_core.demo_user_approver"/>
+</odoo>

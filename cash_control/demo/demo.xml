@@ -1,1 +1,92 @@
-<odoo noupdate="1"><record id="distribution_core.demo_user_initiator" model="res.users"><field name="group_ids" eval="[(4, ref('cash_control.group_cash_control_user'))]"/></record><record id="distribution_core.demo_user_reviewer" model="res.users"><field name="group_ids" eval="[(4, ref('cash_control.group_cash_control_reviewer'))]"/></record><record id="distribution_core.demo_user_approver" model="res.users"><field name="group_ids" eval="[(4, ref('cash_control.group_cash_control_approver'))]"/></record></odoo>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+  <!-- Access for the demo users -->
+  <record id="distribution_core.demo_user_initiator" model="res.users">
+    <field name="group_ids" eval="[(4, ref('cash_control.group_cash_control_user'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_reviewer" model="res.users">
+    <field name="group_ids" eval="[(4, ref('cash_control.group_cash_control_reviewer'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('cash_control.group_cash_control_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_senior_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('cash_control.group_cash_control_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_workflow_manager" model="res.users">
+    <field name="group_ids" eval="[(4, ref('cash_control.group_cash_control_manager'))]"/>
+  </record>
+
+  <!-- Cash from the completed trip: banked and reconciled -->
+  <record id="demo_cash_wholesale_trip" model="cash.collection" uid="distribution_core.demo_user_initiator">
+    <field name="process_date" eval="(DateTime.today() - timedelta(days=3)).strftime('%Y-%m-%d')"/>
+    <field name="collection_type">cash</field>
+    <field name="partner_id" ref="distribution_core.demo_customer_wholesale"/>
+    <field name="trip_id" ref="distribution_trips.demo_trip_completed"/>
+    <field name="collector_id" ref="distribution_core.demo_user_sales_rep"/>
+    <field name="amount_expected">120000</field>
+    <field name="amount_collected">120000</field>
+    <field name="amount">120000</field>
+    <field name="external_reference">BANK-SLIP-77120</field>
+    <field name="submission_note">Cash handed over to the site cashier and banked the same day.</field>
+  </record>
+
+  <!-- M-Pesa from the same trip: approved, ready to post a payment -->
+  <record id="demo_cash_supermarket_mpesa" model="cash.collection" uid="distribution_core.demo_user_initiator">
+    <field name="process_date" eval="(DateTime.today() - timedelta(days=3)).strftime('%Y-%m-%d')"/>
+    <field name="collection_type">mpesa</field>
+    <field name="partner_id" ref="distribution_core.demo_customer_supermarket"/>
+    <field name="trip_id" ref="distribution_trips.demo_trip_completed"/>
+    <field name="collector_id" ref="distribution_core.demo_user_sales_rep"/>
+    <field name="amount_expected">60000</field>
+    <field name="amount_collected">60000</field>
+    <field name="amount">60000</field>
+    <field name="external_reference">QJK4T7Y2PL</field>
+  </record>
+
+  <!-- Today's kiosk collection: short by KES 500, submitted and past its 8-hour target -->
+  <record id="demo_cash_kiosk_short" model="cash.collection" uid="distribution_core.demo_user_initiator">
+    <field name="collection_type">cash</field>
+    <field name="partner_id" ref="distribution_core.demo_customer_kiosk"/>
+    <field name="trip_id" ref="distribution_trips.demo_trip_in_progress"/>
+    <field name="collector_id" ref="distribution_core.demo_user_sales_agent"/>
+    <field name="amount_expected">18500</field>
+    <field name="amount_collected">18000</field>
+    <field name="amount">18000</field>
+    <field name="submission_note">Customer disputed one damaged case; KES 500 withheld pending a product return.</field>
+  </record>
+
+  <!-- Card payment returned for correction -->
+  <record id="demo_cash_supermarket_card" model="cash.collection" uid="distribution_core.demo_user_initiator">
+    <field name="process_date" eval="(DateTime.today() - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+    <field name="collection_type">card</field>
+    <field name="partner_id" ref="distribution_core.demo_customer_supermarket"/>
+    <field name="collector_id" ref="distribution_core.demo_user_sales_rep"/>
+    <field name="amount_expected">12000</field>
+    <field name="amount_collected">12000</field>
+    <field name="amount">12000</field>
+    <field name="external_reference">CARD-0031</field>
+  </record>
+
+  <!-- Nairobi bank transfer still being captured -->
+  <record id="demo_cash_hotel_bank" model="cash.collection" uid="distribution_core.demo_user_initiator">
+    <field name="region_id" ref="distribution_core.demo_region_nairobi"/>
+    <field name="site_id" ref="distribution_core.demo_site_nairobi"/>
+    <field name="collection_type">bank</field>
+    <field name="partner_id" ref="distribution_core.demo_customer_hotel"/>
+    <field name="amount_expected">95000</field>
+    <field name="amount_collected">95000</field>
+    <field name="amount">95000</field>
+    <field name="external_reference">EFT-NBO-20331</field>
+  </record>
+
+  <!-- Workflow -->
+  <function model="cash.collection" name="action_submit" eval="[[ref('demo_cash_wholesale_trip'), ref('demo_cash_supermarket_mpesa'), ref('demo_cash_kiosk_short'), ref('demo_cash_supermarket_card')]]" uid="distribution_core.demo_user_initiator"/>
+  <function model="cash.collection" name="action_review" eval="[[ref('demo_cash_wholesale_trip'), ref('demo_cash_supermarket_mpesa')]]" uid="distribution_core.demo_user_reviewer"/>
+  <function model="cash.collection" name="action_approve" eval="[[ref('demo_cash_wholesale_trip'), ref('demo_cash_supermarket_mpesa')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="cash.collection" name="action_start_processing" eval="[[ref('demo_cash_wholesale_trip')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="cash.collection" name="action_reconcile" eval="[[ref('demo_cash_wholesale_trip')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="cash.collection" name="write" eval="[[ref('demo_cash_kiosk_short')], {'submitted_at': (DateTime.now() - timedelta(hours=11)).strftime('%Y-%m-%d %H:%M:%S')}]"/>
+  <function model="cash.collection" name="write" eval="[[ref('demo_cash_supermarket_card')], {'action_reason': 'Card slip reference does not match the terminal settlement report. Attach the merchant copy.'}]"/>
+  <function model="cash.collection" name="action_return_correction" eval="[[ref('demo_cash_supermarket_card')]]" uid="distribution_core.demo_user_reviewer"/>
+</odoo>

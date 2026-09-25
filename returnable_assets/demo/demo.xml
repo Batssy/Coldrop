@@ -1,1 +1,99 @@
-<odoo noupdate="1"><record id="distribution_core.demo_user_initiator" model="res.users"><field name="group_ids" eval="[(4, ref('returnable_assets.group_returnable_assets_user'))]"/></record><record id="distribution_core.demo_user_reviewer" model="res.users"><field name="group_ids" eval="[(4, ref('returnable_assets.group_returnable_assets_reviewer'))]"/></record><record id="distribution_core.demo_user_approver" model="res.users"><field name="group_ids" eval="[(4, ref('returnable_assets.group_returnable_assets_approver'))]"/></record></odoo>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+  <!-- Access for the demo users -->
+  <record id="distribution_core.demo_user_initiator" model="res.users">
+    <field name="group_ids" eval="[(4, ref('returnable_assets.group_returnable_assets_user'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_reviewer" model="res.users">
+    <field name="group_ids" eval="[(4, ref('returnable_assets.group_returnable_assets_reviewer'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('returnable_assets.group_returnable_assets_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_senior_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('returnable_assets.group_returnable_assets_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_workflow_manager" model="res.users">
+    <field name="group_ids" eval="[(4, ref('returnable_assets.group_returnable_assets_manager'))]"/>
+  </record>
+
+  <!-- Crates received from the supplier with the call-off: approved -->
+  <record id="demo_rta_supplier_receipt" model="returnable.asset.transaction" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_warehouse"/>
+    <field name="process_date" eval="(DateTime.today() - timedelta(days=6)).strftime('%Y-%m-%d')"/>
+    <field name="transaction_type">supplier_receipt</field>
+    <field name="partner_id" ref="distribution_core.demo_vendor"/>
+    <field name="asset_product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_crate'))]"/>
+    <field name="quantity">500</field>
+    <field name="asset_value">325000</field>
+    <field name="amount">325000</field>
+  </record>
+
+  <!-- Crates issued to the wholesale customer: approved, processed and reconciled -->
+  <record id="demo_rta_customer_issue" model="returnable.asset.transaction" uid="distribution_core.demo_user_initiator">
+    <field name="process_date" eval="(DateTime.today() - timedelta(days=3)).strftime('%Y-%m-%d')"/>
+    <field name="transaction_type">customer_issue</field>
+    <field name="partner_id" ref="distribution_core.demo_customer_wholesale"/>
+    <field name="driver_id" ref="distribution_core.demo_employee_driver_1"/>
+    <field name="route_id" ref="distribution_core.demo_route_malindi_1"/>
+    <field name="asset_product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_crate'))]"/>
+    <field name="quantity">120</field>
+    <field name="asset_value">78000</field>
+    <field name="amount">78000</field>
+  </record>
+
+  <!-- Driver custody for today's Watamu trip: approved -->
+  <record id="demo_rta_driver_custody" model="returnable.asset.transaction" uid="distribution_core.demo_user_initiator">
+    <field name="transaction_type">driver_issue</field>
+    <field name="driver_id" ref="distribution_core.demo_employee_driver_2"/>
+    <field name="route_id" ref="distribution_core.demo_route_watamu"/>
+    <field name="asset_product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_crate'))]"/>
+    <field name="quantity">30</field>
+    <field name="asset_value">19500</field>
+    <field name="amount">19500</field>
+  </record>
+
+  <!-- Empties collected from the supermarket: submitted -->
+  <record id="demo_rta_empty_collection" model="returnable.asset.transaction" uid="distribution_core.demo_user_initiator">
+    <field name="transaction_type">customer_collection</field>
+    <field name="partner_id" ref="distribution_core.demo_customer_supermarket"/>
+    <field name="driver_id" ref="distribution_core.demo_employee_driver_1"/>
+    <field name="route_id" ref="distribution_core.demo_route_malindi_1"/>
+    <field name="asset_product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_crate'))]"/>
+    <field name="quantity">40</field>
+    <field name="asset_value">26000</field>
+    <field name="amount">26000</field>
+  </record>
+
+  <!-- Bottle breakage at the kiosk: returned for correction -->
+  <record id="demo_rta_breakage" model="returnable.asset.transaction" uid="distribution_core.demo_user_initiator">
+    <field name="transaction_type">breakage</field>
+    <field name="partner_id" ref="distribution_core.demo_customer_kiosk"/>
+    <field name="driver_id" ref="distribution_core.demo_employee_driver_2"/>
+    <field name="route_id" ref="distribution_core.demo_route_watamu"/>
+    <field name="asset_product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_bottle_rgb'))]"/>
+    <field name="quantity">48</field>
+    <field name="asset_value">1680</field>
+    <field name="amount">1680</field>
+  </record>
+
+  <!-- Surplus crates to send back to the supplier: draft -->
+  <record id="demo_rta_supplier_return" model="returnable.asset.transaction" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_warehouse"/>
+    <field name="transaction_type">supplier_return</field>
+    <field name="partner_id" ref="distribution_core.demo_vendor"/>
+    <field name="asset_product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_crate'))]"/>
+    <field name="quantity">200</field>
+    <field name="asset_value">130000</field>
+    <field name="amount">130000</field>
+  </record>
+
+  <!-- Workflow -->
+  <function model="returnable.asset.transaction" name="action_submit" eval="[[ref('demo_rta_supplier_receipt'), ref('demo_rta_customer_issue'), ref('demo_rta_driver_custody'), ref('demo_rta_empty_collection'), ref('demo_rta_breakage')]]" uid="distribution_core.demo_user_initiator"/>
+  <function model="returnable.asset.transaction" name="action_review" eval="[[ref('demo_rta_supplier_receipt'), ref('demo_rta_customer_issue'), ref('demo_rta_driver_custody')]]" uid="distribution_core.demo_user_reviewer"/>
+  <function model="returnable.asset.transaction" name="action_approve" eval="[[ref('demo_rta_supplier_receipt'), ref('demo_rta_customer_issue'), ref('demo_rta_driver_custody')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="returnable.asset.transaction" name="action_start_processing" eval="[[ref('demo_rta_customer_issue')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="returnable.asset.transaction" name="action_reconcile" eval="[[ref('demo_rta_customer_issue')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="returnable.asset.transaction" name="write" eval="[[ref('demo_rta_breakage')], {'action_reason': 'The breakage report must be countersigned by the driver and the customer.'}]"/>
+  <function model="returnable.asset.transaction" name="action_return_correction" eval="[[ref('demo_rta_breakage')]]" uid="distribution_core.demo_user_reviewer"/>
+</odoo>

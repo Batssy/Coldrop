@@ -1,1 +1,86 @@
-<odoo noupdate="1"><record id="distribution_core.demo_user_initiator" model="res.users"><field name="group_ids" eval="[(4, ref('site_security.group_site_security_user'))]"/></record><record id="distribution_core.demo_user_reviewer" model="res.users"><field name="group_ids" eval="[(4, ref('site_security.group_site_security_reviewer'))]"/></record><record id="distribution_core.demo_user_approver" model="res.users"><field name="group_ids" eval="[(4, ref('site_security.group_site_security_approver'))]"/></record></odoo>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+  <!-- Access for the demo users -->
+  <record id="distribution_core.demo_user_initiator" model="res.users">
+    <field name="group_ids" eval="[(4, ref('site_security.group_site_security_user'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_reviewer" model="res.users">
+    <field name="group_ids" eval="[(4, ref('site_security.group_site_security_reviewer'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('site_security.group_site_security_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_senior_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('site_security.group_site_security_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_workflow_manager" model="res.users">
+    <field name="group_ids" eval="[(4, ref('site_security.group_site_security_manager'))]"/>
+  </record>
+
+  <!-- Supplier delivery this morning: approved, vehicle on site -->
+  <record id="demo_access_supplier_delivery" model="site.access.request" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_warehouse"/>
+    <field name="access_type">supplier</field>
+    <field name="person_name">Supplier delivery crew (2 people)</field>
+    <field name="partner_id" ref="distribution_core.demo_vendor"/>
+    <field name="vehicle_registration">KCX 881M</field>
+    <field name="host_user_id" ref="distribution_core.demo_user_initiator"/>
+    <field name="expected_entry" eval="DateTime.today().strftime('%Y-%m-%d 07:00:00')"/>
+    <field name="actual_entry" eval="DateTime.today().strftime('%Y-%m-%d 07:20:00')"/>
+    <field name="purpose">Delivery of cola and orange soda against the first purchase call-off.</field>
+    <field name="pass_reference">GATE-SUP-0142</field>
+  </record>
+
+  <!-- Dispatch exit for the completed trip: closed -->
+  <record id="demo_access_dispatch_exit" model="site.access.request" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_logistics"/>
+    <field name="process_date" eval="(DateTime.today() - timedelta(days=3)).strftime('%Y-%m-%d')"/>
+    <field name="access_type">dispatch</field>
+    <field name="person_name">Demo Driver (Malindi Central)</field>
+    <field name="vehicle_registration">KDA 101A</field>
+    <field name="host_user_id" ref="distribution_core.demo_user_reviewer"/>
+    <field name="expected_entry" eval="(DateTime.today() - timedelta(days=3)).strftime('%Y-%m-%d 05:30:00')"/>
+    <field name="actual_entry" eval="(DateTime.today() - timedelta(days=3)).strftime('%Y-%m-%d 05:40:00')"/>
+    <field name="actual_exit" eval="(DateTime.today() - timedelta(days=3)).strftime('%Y-%m-%d 05:45:00')"/>
+    <field name="purpose">Loaded truck exit for the Malindi Central route; seal numbers checked against the load sheet.</field>
+    <field name="pass_reference">GATE-DSP-0388</field>
+  </record>
+
+  <!-- Contractor visit: submitted and past its 2-hour target -->
+  <record id="demo_access_contractor" model="site.access.request" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_warehouse"/>
+    <field name="access_type">contractor</field>
+    <field name="person_name">Demo Cold-Room Technicians (3 people)</field>
+    <field name="vehicle_registration">KCQ 552T</field>
+    <field name="host_user_id" ref="distribution_core.demo_user_initiator"/>
+    <field name="expected_entry" eval="(DateTime.today() + timedelta(days=1)).strftime('%Y-%m-%d 09:00:00')"/>
+    <field name="purpose">Quarterly service of the cold-room compressors.</field>
+  </record>
+
+  <!-- Unscheduled vehicle entry: rejected -->
+  <record id="demo_access_unscheduled_vehicle" model="site.access.request" uid="distribution_core.demo_user_initiator">
+    <field name="access_type">vehicle</field>
+    <field name="person_name">Unregistered delivery van</field>
+    <field name="vehicle_registration">KBZ 710K</field>
+    <field name="expected_entry" eval="DateTime.today().strftime('%Y-%m-%d 13:00:00')"/>
+    <field name="purpose">Driver claims a delivery of promotional materials; no purchase order was presented.</field>
+  </record>
+
+  <!-- Auditor visit next week: draft -->
+  <record id="demo_access_auditor" model="site.access.request" uid="distribution_core.demo_user_initiator">
+    <field name="access_type">visitor</field>
+    <field name="person_name">Demo Audit Partners (stock count team)</field>
+    <field name="host_user_id" ref="distribution_core.demo_user_approver"/>
+    <field name="expected_entry" eval="(DateTime.today() + timedelta(days=7)).strftime('%Y-%m-%d 08:00:00')"/>
+    <field name="purpose">Quarter-end stock count and returnable asset verification.</field>
+  </record>
+
+  <!-- Workflow -->
+  <function model="site.access.request" name="action_submit" eval="[[ref('demo_access_supplier_delivery'), ref('demo_access_dispatch_exit'), ref('demo_access_contractor'), ref('demo_access_unscheduled_vehicle')]]" uid="distribution_core.demo_user_initiator"/>
+  <function model="site.access.request" name="action_review" eval="[[ref('demo_access_supplier_delivery'), ref('demo_access_dispatch_exit')]]" uid="distribution_core.demo_user_reviewer"/>
+  <function model="site.access.request" name="action_approve" eval="[[ref('demo_access_supplier_delivery'), ref('demo_access_dispatch_exit')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="site.access.request" name="action_close" eval="[[ref('demo_access_dispatch_exit')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="site.access.request" name="write" eval="[[ref('demo_access_contractor')], {'submitted_at': (DateTime.now() - timedelta(hours=5)).strftime('%Y-%m-%d %H:%M:%S')}]"/>
+  <function model="site.access.request" name="write" eval="[[ref('demo_access_unscheduled_vehicle')], {'action_reason': 'No purchase order or host confirmation. Vehicle turned away at the gate.'}]"/>
+  <function model="site.access.request" name="action_reject" eval="[[ref('demo_access_unscheduled_vehicle')]]" uid="distribution_core.demo_user_reviewer"/>
+</odoo>

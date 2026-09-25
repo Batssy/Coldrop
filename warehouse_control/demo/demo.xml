@@ -1,1 +1,102 @@
-<odoo noupdate="1"><record id="distribution_core.demo_user_initiator" model="res.users"><field name="group_ids" eval="[(4, ref('warehouse_control.group_warehouse_control_user'))]"/></record><record id="distribution_core.demo_user_reviewer" model="res.users"><field name="group_ids" eval="[(4, ref('warehouse_control.group_warehouse_control_reviewer'))]"/></record><record id="distribution_core.demo_user_approver" model="res.users"><field name="group_ids" eval="[(4, ref('warehouse_control.group_warehouse_control_approver'))]"/></record></odoo>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+  <!-- Access for the demo users -->
+  <record id="distribution_core.demo_user_initiator" model="res.users">
+    <field name="group_ids" eval="[(4, ref('warehouse_control.group_warehouse_control_user'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_reviewer" model="res.users">
+    <field name="group_ids" eval="[(4, ref('warehouse_control.group_warehouse_control_reviewer'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('warehouse_control.group_warehouse_control_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_senior_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('warehouse_control.group_warehouse_control_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_workflow_manager" model="res.users">
+    <field name="group_ids" eval="[(4, ref('warehouse_control.group_warehouse_control_manager'))]"/>
+  </record>
+
+  <!-- Warehouse locations -->
+  <record id="demo_location_quarantine_bay" model="stock.location">
+    <field name="name">Quarantine Bay</field>
+    <field name="location_id" ref="stock.stock_location_stock"/>
+    <field name="usage">internal</field>
+  </record>
+  <record id="demo_location_write_off" model="stock.location">
+    <field name="name">Demo Write-Off</field>
+    <field name="usage">inventory</field>
+  </record>
+
+  <!-- Move damaged cola to quarantine: approved, ready to create the transfer -->
+  <record id="demo_whc_quarantine_cola" model="warehouse.control" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_warehouse"/>
+    <field name="cost_center">MAL-WH</field>
+    <field name="operation_type">quarantine</field>
+    <field name="picking_type_id" ref="stock.picking_type_internal"/>
+    <field name="source_location_id" ref="stock.stock_location_stock"/>
+    <field name="destination_location_id" ref="demo_location_quarantine_bay"/>
+    <field name="amount">4750</field>
+    <field name="submission_note">Cases with chipped bottle necks found during the morning cycle count.</field>
+  </record>
+  <record id="demo_whc_quarantine_cola_line" model="warehouse.control.line">
+    <field name="control_id" ref="demo_whc_quarantine_cola"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_cola_rgb'))]"/>
+    <field name="quantity">5</field>
+  </record>
+
+  <!-- Release inspected water back to stock: submitted -->
+  <record id="demo_whc_release_water" model="warehouse.control" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_warehouse"/>
+    <field name="cost_center">MAL-WH</field>
+    <field name="operation_type">release</field>
+    <field name="picking_type_id" ref="stock.picking_type_internal"/>
+    <field name="source_location_id" ref="demo_location_quarantine_bay"/>
+    <field name="destination_location_id" ref="stock.stock_location_stock"/>
+    <field name="amount">7000</field>
+    <field name="submission_note">Quality inspection passed: shrink-wrap damage only, bottles intact.</field>
+  </record>
+  <record id="demo_whc_release_water_line" model="warehouse.control.line">
+    <field name="control_id" ref="demo_whc_release_water"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_water_pet'))]"/>
+    <field name="quantity">10</field>
+  </record>
+
+  <!-- Write off crushed orange soda: reviewed, waiting for final approval -->
+  <record id="demo_whc_write_off_orange" model="warehouse.control" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_warehouse"/>
+    <field name="cost_center">MAL-WH</field>
+    <field name="operation_type">writeoff</field>
+    <field name="picking_type_id" ref="stock.picking_type_internal"/>
+    <field name="source_location_id" ref="demo_location_quarantine_bay"/>
+    <field name="destination_location_id" ref="demo_location_write_off"/>
+    <field name="amount">2340</field>
+    <field name="submission_note">Pallet crushed by a forklift; product not saleable.</field>
+  </record>
+  <record id="demo_whc_write_off_orange_line" model="warehouse.control.line">
+    <field name="control_id" ref="demo_whc_write_off_orange"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_orange_pet'))]"/>
+    <field name="quantity">3</field>
+  </record>
+
+  <!-- Controlled transfer of launch stock: draft -->
+  <record id="demo_whc_transfer_energy" model="warehouse.control" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_warehouse"/>
+    <field name="cost_center">MAL-WH</field>
+    <field name="operation_type">transfer</field>
+    <field name="picking_type_id" ref="stock.picking_type_internal"/>
+    <field name="source_location_id" ref="stock.stock_location_stock"/>
+    <field name="destination_location_id" ref="demo_location_quarantine_bay"/>
+    <field name="amount">3800</field>
+  </record>
+  <record id="demo_whc_transfer_energy_line" model="warehouse.control.line">
+    <field name="control_id" ref="demo_whc_transfer_energy"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_energy_can'))]"/>
+    <field name="quantity">2</field>
+  </record>
+
+  <!-- Workflow -->
+  <function model="warehouse.control" name="action_submit" eval="[[ref('demo_whc_quarantine_cola'), ref('demo_whc_release_water'), ref('demo_whc_write_off_orange')]]" uid="distribution_core.demo_user_initiator"/>
+  <function model="warehouse.control" name="action_review" eval="[[ref('demo_whc_quarantine_cola'), ref('demo_whc_write_off_orange')]]" uid="distribution_core.demo_user_reviewer"/>
+  <function model="warehouse.control" name="action_approve" eval="[[ref('demo_whc_quarantine_cola')]]" uid="distribution_core.demo_user_approver"/>
+</odoo>

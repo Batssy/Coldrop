@@ -1,1 +1,68 @@
-<odoo noupdate="1"><record id="distribution_core.demo_user_initiator" model="res.users"><field name="group_ids" eval="[(4, ref('non_core_business.group_non_core_business_user'))]"/></record><record id="distribution_core.demo_user_reviewer" model="res.users"><field name="group_ids" eval="[(4, ref('non_core_business.group_non_core_business_reviewer'))]"/></record><record id="distribution_core.demo_user_approver" model="res.users"><field name="group_ids" eval="[(4, ref('non_core_business.group_non_core_business_approver'))]"/></record></odoo>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+  <!-- Access for the demo users -->
+  <record id="distribution_core.demo_user_initiator" model="res.users">
+    <field name="group_ids" eval="[(4, ref('non_core_business.group_non_core_business_user'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_reviewer" model="res.users">
+    <field name="group_ids" eval="[(4, ref('non_core_business.group_non_core_business_reviewer'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('non_core_business.group_non_core_business_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_senior_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('non_core_business.group_non_core_business_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_workflow_manager" model="res.users">
+    <field name="group_ids" eval="[(4, ref('non_core_business.group_non_core_business_manager'))]"/>
+  </record>
+
+  <!-- Purchase of branded coolers: approved -->
+  <record id="demo_non_core_cooler_purchase" model="non.core.request" uid="distribution_core.demo_user_initiator">
+    <field name="request_type">purchase</field>
+    <field name="partner_id" ref="distribution_core.demo_vendor"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_cooler'))]"/>
+    <field name="quantity">6</field>
+    <field name="unit_price">45000</field>
+    <field name="amount">270000</field>
+    <field name="purpose">Branded display coolers for placement at top-volume outlets during the energy drink launch.</field>
+  </record>
+
+  <!-- Resale of coolers to a customer: submitted -->
+  <record id="demo_non_core_cooler_sale" model="non.core.request" uid="distribution_core.demo_user_initiator">
+    <field name="request_type">sale</field>
+    <field name="partner_id" ref="distribution_core.demo_customer_supermarket"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_cooler'))]"/>
+    <field name="quantity">2</field>
+    <field name="unit_price">52000</field>
+    <field name="amount">104000</field>
+    <field name="purpose">Customer wants to buy two coolers outright for new branches instead of taking them on loan.</field>
+  </record>
+
+  <!-- Internal issue of promotional merchandise: rejected -->
+  <record id="demo_non_core_tshirt_issue" model="non.core.request" uid="distribution_core.demo_user_initiator">
+    <field name="request_type">issue</field>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_tshirt'))]"/>
+    <field name="quantity">200</field>
+    <field name="unit_price">350</field>
+    <field name="amount">70000</field>
+    <field name="purpose">Promo T-shirts for the Watamu beach activation weekend.</field>
+  </record>
+
+  <!-- Third-party delivery service: draft -->
+  <record id="demo_non_core_delivery_service" model="non.core.request" uid="distribution_core.demo_user_initiator">
+    <field name="request_type">service</field>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_delivery_service'))]"/>
+    <field name="quantity">4</field>
+    <field name="unit_price">3500</field>
+    <field name="amount">14000</field>
+    <field name="purpose">Hire a third-party pickup for island deliveries while KDD 404D is in the workshop.</field>
+  </record>
+
+  <!-- Workflow -->
+  <function model="non.core.request" name="action_submit" eval="[[ref('demo_non_core_cooler_purchase'), ref('demo_non_core_cooler_sale'), ref('demo_non_core_tshirt_issue')]]" uid="distribution_core.demo_user_initiator"/>
+  <function model="non.core.request" name="action_review" eval="[[ref('demo_non_core_cooler_purchase')]]" uid="distribution_core.demo_user_reviewer"/>
+  <function model="non.core.request" name="action_approve" eval="[[ref('demo_non_core_cooler_purchase')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="non.core.request" name="write" eval="[[ref('demo_non_core_tshirt_issue')], {'action_reason': 'The energy drink launch promotion budget is not yet approved. Resubmit once it is.'}]"/>
+  <function model="non.core.request" name="action_reject" eval="[[ref('demo_non_core_tshirt_issue')]]" uid="distribution_core.demo_user_reviewer"/>
+</odoo>

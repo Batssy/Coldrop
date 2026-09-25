@@ -1,1 +1,172 @@
-<odoo noupdate="1"><record id="distribution_core.demo_user_initiator" model="res.users"><field name="group_ids" eval="[(4, ref('sales_commission.group_sales_commission_user'))]"/></record><record id="distribution_core.demo_user_reviewer" model="res.users"><field name="group_ids" eval="[(4, ref('sales_commission.group_sales_commission_reviewer'))]"/></record><record id="distribution_core.demo_user_approver" model="res.users"><field name="group_ids" eval="[(4, ref('sales_commission.group_sales_commission_approver'))]"/></record></odoo>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+  <!-- Access for the demo users -->
+  <record id="distribution_core.demo_user_initiator" model="res.users">
+    <field name="group_ids" eval="[(4, ref('sales_commission.group_sales_commission_user'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_reviewer" model="res.users">
+    <field name="group_ids" eval="[(4, ref('sales_commission.group_sales_commission_reviewer'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('sales_commission.group_sales_commission_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_senior_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('sales_commission.group_sales_commission_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_workflow_manager" model="res.users">
+    <field name="group_ids" eval="[(4, ref('sales_commission.group_sales_commission_manager'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_sales_rep" model="res.users">
+    <field name="group_ids" eval="[(4, ref('sales_team.group_sale_salesman')), (4, ref('sales_commission.group_sales_commission_user'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_sales_agent" model="res.users">
+    <field name="group_ids" eval="[(4, ref('sales_team.group_sale_salesman')), (4, ref('sales_commission.group_sales_commission_user'))]"/>
+  </record>
+
+  <!-- Commission plans (the first matching plan in sequence order applies) -->
+  <record id="demo_commission_plan_energy_launch" model="sales.commission.plan">
+    <field name="name">Energy Drink Launch Bonus: KES 40 per Case</field>
+    <field name="sequence">5</field>
+    <field name="date_start" eval="DateTime.today().replace(day=1).strftime('%Y-%m-%d')"/>
+    <field name="date_end" eval="(DateTime.today() + relativedelta(months=2)).strftime('%Y-%m-%d')"/>
+    <field name="employment_type">all</field>
+    <field name="basis">ordered</field>
+    <field name="rate_type">per_unit</field>
+    <field name="rate">40</field>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_energy_can'))]"/>
+  </record>
+  <record id="demo_commission_plan_full_time" model="sales.commission.plan">
+    <field name="name">Full-Time Sales Reps: 2% of Confirmed Sales</field>
+    <field name="sequence">10</field>
+    <field name="employment_type">full_time</field>
+    <field name="basis">ordered</field>
+    <field name="rate_type">percentage</field>
+    <field name="rate">2</field>
+    <field name="target_amount">150000</field>
+    <field name="minimum_achievement_percent">80</field>
+    <field name="cap_amount">25000</field>
+  </record>
+  <record id="demo_commission_plan_agent" model="sales.commission.plan">
+    <field name="name">Sales Agents: KES 25 per Case</field>
+    <field name="sequence">20</field>
+    <field name="employment_type">agent</field>
+    <field name="basis">ordered</field>
+    <field name="rate_type">per_unit</field>
+    <field name="rate">25</field>
+  </record>
+  <record id="demo_commission_plan_contract_paid" model="sales.commission.plan">
+    <field name="name">Contract Staff: 3% of Paid Sales</field>
+    <field name="sequence">30</field>
+    <field name="employment_type">contract</field>
+    <field name="basis">paid</field>
+    <field name="rate_type">percentage</field>
+    <field name="rate">3</field>
+    <field name="cap_amount">20000</field>
+    <field name="include_refund_clawback" eval="True"/>
+  </record>
+
+  <!-- Last month's confirmed sales -->
+  <record id="demo_so_prev_wholesale" model="sale.order">
+    <field name="partner_id" ref="distribution_core.demo_customer_wholesale"/>
+    <field name="user_id" ref="distribution_core.demo_user_sales_rep"/>
+  </record>
+  <record id="demo_so_prev_wholesale_cola" model="sale.order.line">
+    <field name="order_id" ref="demo_so_prev_wholesale"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_cola_rgb'))]"/>
+    <field name="product_uom_qty">120</field>
+    <field name="price_unit">1200</field>
+  </record>
+  <record id="demo_so_prev_wholesale_water" model="sale.order.line">
+    <field name="order_id" ref="demo_so_prev_wholesale"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_water_pet'))]"/>
+    <field name="product_uom_qty">80</field>
+    <field name="price_unit">900</field>
+  </record>
+  <record id="demo_so_prev_supermarket" model="sale.order">
+    <field name="partner_id" ref="distribution_core.demo_customer_supermarket"/>
+    <field name="user_id" ref="distribution_core.demo_user_sales_agent"/>
+  </record>
+  <record id="demo_so_prev_supermarket_orange" model="sale.order.line">
+    <field name="order_id" ref="demo_so_prev_supermarket"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_orange_pet'))]"/>
+    <field name="product_uom_qty">50</field>
+    <field name="price_unit">1000</field>
+  </record>
+  <record id="demo_so_prev_supermarket_cola" model="sale.order.line">
+    <field name="order_id" ref="demo_so_prev_supermarket"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_cola_rgb'))]"/>
+    <field name="product_uom_qty">30</field>
+    <field name="price_unit">1200</field>
+  </record>
+
+  <!-- This month's confirmed sales -->
+  <record id="demo_so_cur_supermarket" model="sale.order">
+    <field name="partner_id" ref="distribution_core.demo_customer_supermarket"/>
+    <field name="user_id" ref="distribution_core.demo_user_sales_rep"/>
+  </record>
+  <record id="demo_so_cur_supermarket_cola" model="sale.order.line">
+    <field name="order_id" ref="demo_so_cur_supermarket"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_cola_rgb'))]"/>
+    <field name="product_uom_qty">150</field>
+    <field name="price_unit">1200</field>
+  </record>
+  <record id="demo_so_cur_supermarket_energy" model="sale.order.line">
+    <field name="order_id" ref="demo_so_cur_supermarket"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_energy_can'))]"/>
+    <field name="product_uom_qty">40</field>
+    <field name="price_unit">2400</field>
+  </record>
+  <record id="demo_so_cur_wholesale" model="sale.order">
+    <field name="partner_id" ref="distribution_core.demo_customer_wholesale"/>
+    <field name="user_id" ref="distribution_core.demo_user_sales_rep"/>
+  </record>
+  <record id="demo_so_cur_wholesale_water" model="sale.order.line">
+    <field name="order_id" ref="demo_so_cur_wholesale"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_water_pet'))]"/>
+    <field name="product_uom_qty">100</field>
+    <field name="price_unit">900</field>
+  </record>
+  <record id="demo_so_cur_kiosk" model="sale.order">
+    <field name="partner_id" ref="distribution_core.demo_customer_kiosk"/>
+    <field name="user_id" ref="distribution_core.demo_user_sales_agent"/>
+  </record>
+  <record id="demo_so_cur_kiosk_cola" model="sale.order.line">
+    <field name="order_id" ref="demo_so_cur_kiosk"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_cola_rgb'))]"/>
+    <field name="product_uom_qty">20</field>
+    <field name="price_unit">1200</field>
+  </record>
+  <record id="demo_so_cur_kiosk_energy" model="sale.order.line">
+    <field name="order_id" ref="demo_so_cur_kiosk"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_energy_can'))]"/>
+    <field name="product_uom_qty">10</field>
+    <field name="price_unit">2400</field>
+  </record>
+
+  <!-- Confirm, then move last month's orders back into last month -->
+  <function model="sale.order" name="action_confirm" eval="[[ref('demo_so_prev_wholesale'), ref('demo_so_prev_supermarket'), ref('demo_so_cur_supermarket'), ref('demo_so_cur_wholesale'), ref('demo_so_cur_kiosk')]]"/>
+  <function model="sale.order" name="write" eval="[[ref('demo_so_prev_wholesale')], {'date_order': (DateTime.today().replace(day=1) - relativedelta(months=1) + timedelta(days=9)).strftime('%Y-%m-%d 09:00:00')}]"/>
+  <function model="sale.order" name="write" eval="[[ref('demo_so_prev_supermarket')], {'date_order': (DateTime.today().replace(day=1) - relativedelta(months=1) + timedelta(days=17)).strftime('%Y-%m-%d 11:30:00')}]"/>
+
+  <!-- Last month's batch: generated, reviewed and approved -->
+  <record id="demo_commission_batch_previous_month" model="sales.commission.batch" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_finance"/>
+    <field name="cost_center">MAL-FIN</field>
+    <field name="period_start" eval="(DateTime.today().replace(day=1) - relativedelta(months=1)).strftime('%Y-%m-%d')"/>
+    <field name="period_end" eval="(DateTime.today().replace(day=1) - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+    <field name="submission_note">Monthly commission run for Malindi sales staff.</field>
+  </record>
+  <function model="sales.commission.batch" name="action_generate_lines" eval="[[ref('demo_commission_batch_previous_month')]]"/>
+  <function model="sales.commission.batch" name="action_submit" eval="[[ref('demo_commission_batch_previous_month')]]" uid="distribution_core.demo_user_initiator"/>
+  <function model="sales.commission.batch" name="action_review" eval="[[ref('demo_commission_batch_previous_month')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="sales.commission.batch" name="action_approve" eval="[[ref('demo_commission_batch_previous_month')]]" uid="workflow_approval.demo_user_senior_approver"/>
+
+  <!-- This month's batch: generated, still in draft -->
+  <record id="demo_commission_batch_current_month" model="sales.commission.batch" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_finance"/>
+    <field name="cost_center">MAL-FIN</field>
+    <field name="period_start" eval="DateTime.today().replace(day=1).strftime('%Y-%m-%d')"/>
+    <field name="period_end" eval="(DateTime.today().replace(day=1) + relativedelta(months=1) - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+  </record>
+  <function model="sales.commission.batch" name="action_generate_lines" eval="[[ref('demo_commission_batch_current_month')]]"/>
+</odoo>

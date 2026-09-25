@@ -1,1 +1,222 @@
-<odoo noupdate="1"><record id="demo_matrix_sales_commitment" model="distribution.approval.matrix"><field name="name">Demo Sales Commitment Approval</field><field name="process_key">sales_commitment</field><field name="department_id" ref="distribution_core.demo_dept_sales"/><field name="reviewer_id" ref="distribution_core.demo_user_reviewer"/><field name="final_approver_id" ref="distribution_core.demo_user_approver"/></record><record id="demo_matrix_purchase_commitment" model="distribution.approval.matrix"><field name="name">Demo Purchase Commitment Approval</field><field name="process_key">purchase_commitment</field><field name="reviewer_id" ref="distribution_core.demo_user_reviewer"/><field name="final_approver_id" ref="distribution_core.demo_user_approver"/></record><record id="demo_matrix_returnables" model="distribution.approval.matrix"><field name="name">Demo Returnables Approval</field><field name="process_key">returnables</field><field name="reviewer_id" ref="distribution_core.demo_user_reviewer"/><field name="final_approver_id" ref="distribution_core.demo_user_approver"/></record><record id="demo_matrix_product_return" model="distribution.approval.matrix"><field name="name">Demo Product Return Approval</field><field name="process_key">product_return</field><field name="reviewer_id" ref="distribution_core.demo_user_reviewer"/><field name="final_approver_id" ref="distribution_core.demo_user_approver"/></record><record id="demo_matrix_credit" model="distribution.approval.matrix"><field name="name">Demo Credit Approval</field><field name="process_key">credit_application</field><field name="reviewer_id" ref="distribution_core.demo_user_reviewer"/><field name="final_approver_id" ref="distribution_core.demo_user_approver"/></record></odoo>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+  <!-- Workflow roles for the shared distribution_core demo users -->
+  <record id="distribution_core.demo_user_initiator" model="res.users">
+    <field name="group_ids" eval="[(4, ref('workflow_approval.group_workflow_user'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_reviewer" model="res.users">
+    <field name="group_ids" eval="[(4, ref('workflow_approval.group_workflow_reviewer'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('workflow_approval.group_workflow_approver'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_executive" model="res.users">
+    <field name="group_ids" eval="[(4, ref('workflow_approval.group_workflow_user'))]"/>
+  </record>
+
+  <!-- Additional approvers for high-value tiers and escalation -->
+  <record id="demo_user_senior_approver" model="res.users">
+    <field name="name">Demo Senior Approver</field>
+    <field name="login">demo.distribution.senior.approver</field>
+    <field name="email">senior.approver@example.com</field>
+    <field name="group_ids" eval="[(4, ref('base.group_user')), (4, ref('distribution_core.group_distribution_core_approver')), (4, ref('workflow_approval.group_workflow_approver'))]"/>
+  </record>
+  <record id="demo_user_workflow_manager" model="res.users">
+    <field name="name">Demo Workflow Manager</field>
+    <field name="login">demo.distribution.workflow.manager</field>
+    <field name="email">workflow.manager@example.com</field>
+    <field name="group_ids" eval="[(4, ref('base.group_user')), (4, ref('distribution_core.group_distribution_core_approver')), (4, ref('workflow_approval.group_workflow_manager'))]"/>
+  </record>
+
+  <!-- Sales commitments: department-specific standard tier, plus a high-value tier -->
+  <record id="demo_matrix_sales_commitment" model="distribution.approval.matrix">
+    <field name="name">Demo Sales Commitment Approval</field>
+    <field name="process_key">sales_commitment</field>
+    <field name="department_id" ref="distribution_core.demo_dept_sales"/>
+    <field name="min_amount">0</field>
+    <field name="max_amount">500000</field>
+    <field name="reviewer_id" ref="distribution_core.demo_user_reviewer"/>
+    <field name="final_approver_id" ref="distribution_core.demo_user_approver"/>
+    <field name="escalation_user_id" ref="demo_user_workflow_manager"/>
+    <field name="approval_hours">24</field>
+  </record>
+  <record id="demo_matrix_sales_commitment_high" model="distribution.approval.matrix">
+    <field name="name">Demo Sales Commitment Approval (High Value)</field>
+    <field name="process_key">sales_commitment</field>
+    <field name="min_amount">500000</field>
+    <field name="reviewer_id" ref="distribution_core.demo_user_approver"/>
+    <field name="final_approver_id" ref="demo_user_senior_approver"/>
+    <field name="escalation_user_id" ref="demo_user_workflow_manager"/>
+    <field name="approval_hours">12</field>
+  </record>
+
+  <!-- Purchase commitments -->
+  <record id="demo_matrix_purchase_commitment" model="distribution.approval.matrix">
+    <field name="name">Demo Purchase Commitment Approval</field>
+    <field name="process_key">purchase_commitment</field>
+    <field name="min_amount">0</field>
+    <field name="max_amount">1000000</field>
+    <field name="reviewer_id" ref="distribution_core.demo_user_reviewer"/>
+    <field name="final_approver_id" ref="distribution_core.demo_user_approver"/>
+    <field name="escalation_user_id" ref="demo_user_workflow_manager"/>
+    <field name="approval_hours">24</field>
+  </record>
+  <record id="demo_matrix_purchase_commitment_high" model="distribution.approval.matrix">
+    <field name="name">Demo Purchase Commitment Approval (High Value)</field>
+    <field name="process_key">purchase_commitment</field>
+    <field name="department_id" ref="distribution_core.demo_dept_procurement"/>
+    <field name="min_amount">1000000</field>
+    <field name="reviewer_id" ref="distribution_core.demo_user_approver"/>
+    <field name="final_approver_id" ref="demo_user_senior_approver"/>
+    <field name="escalation_user_id" ref="demo_user_workflow_manager"/>
+    <field name="approval_hours">12</field>
+  </record>
+
+  <!-- Credit applications -->
+  <record id="demo_matrix_credit" model="distribution.approval.matrix">
+    <field name="name">Demo Credit Approval</field>
+    <field name="process_key">credit_application</field>
+    <field name="min_amount">0</field>
+    <field name="max_amount">250000</field>
+    <field name="reviewer_id" ref="distribution_core.demo_user_reviewer"/>
+    <field name="final_approver_id" ref="distribution_core.demo_user_approver"/>
+    <field name="approval_hours">48</field>
+  </record>
+  <record id="demo_matrix_credit_high" model="distribution.approval.matrix">
+    <field name="name">Demo Credit Approval (High Limit)</field>
+    <field name="process_key">credit_application</field>
+    <field name="department_id" ref="distribution_core.demo_dept_finance"/>
+    <field name="min_amount">250000</field>
+    <field name="reviewer_id" ref="distribution_core.demo_user_approver"/>
+    <field name="final_approver_id" ref="demo_user_senior_approver"/>
+    <field name="escalation_user_id" ref="demo_user_workflow_manager"/>
+    <field name="approval_hours">24</field>
+  </record>
+
+  <!-- Budgets -->
+  <record id="demo_matrix_budget" model="distribution.approval.matrix">
+    <field name="name">Demo Budget Approval</field>
+    <field name="process_key">budget</field>
+    <field name="department_id" ref="distribution_core.demo_dept_finance"/>
+    <field name="reviewer_id" ref="distribution_core.demo_user_approver"/>
+    <field name="final_approver_id" ref="demo_user_senior_approver"/>
+    <field name="escalation_user_id" ref="demo_user_workflow_manager"/>
+    <field name="approval_hours">48</field>
+  </record>
+  <record id="demo_matrix_budget_close" model="distribution.approval.matrix">
+    <field name="name">Demo Budget Closure Approval</field>
+    <field name="process_key">budget_close</field>
+    <field name="reviewer_id" ref="distribution_core.demo_user_approver"/>
+    <field name="final_approver_id" ref="demo_user_senior_approver"/>
+    <field name="escalation_user_id" ref="demo_user_workflow_manager"/>
+    <field name="approval_hours">72</field>
+  </record>
+
+  <!-- Cash collections: tighter turnaround -->
+  <record id="demo_matrix_cash_collection" model="distribution.approval.matrix">
+    <field name="name">Demo Cash Collection Approval</field>
+    <field name="process_key">cash_collection</field>
+    <field name="reviewer_id" ref="distribution_core.demo_user_reviewer"/>
+    <field name="final_approver_id" ref="distribution_core.demo_user_approver"/>
+    <field name="escalation_user_id" ref="demo_user_workflow_manager"/>
+    <field name="approval_hours">8</field>
+  </record>
+
+  <!-- Operational processes -->
+  <record id="demo_matrix_returnables" model="distribution.approval.matrix">
+    <field name="name">Demo Returnables Approval</field>
+    <field name="process_key">returnables</field>
+    <field name="reviewer_id" ref="distribution_core.demo_user_reviewer"/>
+    <field name="final_approver_id" ref="distribution_core.demo_user_approver"/>
+    <field name="approval_hours">24</field>
+  </record>
+  <record id="demo_matrix_product_return" model="distribution.approval.matrix">
+    <field name="name">Demo Product Return Approval</field>
+    <field name="process_key">product_return</field>
+    <field name="reviewer_id" ref="distribution_core.demo_user_reviewer"/>
+    <field name="final_approver_id" ref="distribution_core.demo_user_approver"/>
+    <field name="approval_hours">24</field>
+  </record>
+  <record id="demo_matrix_contracts" model="distribution.approval.matrix">
+    <field name="name">Demo Distribution Contract Approval</field>
+    <field name="process_key">contracts</field>
+    <field name="reviewer_id" ref="distribution_core.demo_user_approver"/>
+    <field name="final_approver_id" ref="demo_user_senior_approver"/>
+    <field name="escalation_user_id" ref="demo_user_workflow_manager"/>
+    <field name="approval_hours">72</field>
+  </record>
+  <record id="demo_matrix_sales_exception" model="distribution.approval.matrix">
+    <field name="name">Demo Sales Exception Approval</field>
+    <field name="process_key">sales_exception</field>
+    <field name="department_id" ref="distribution_core.demo_dept_sales"/>
+    <field name="reviewer_id" ref="distribution_core.demo_user_reviewer"/>
+    <field name="final_approver_id" ref="distribution_core.demo_user_approver"/>
+    <field name="approval_hours">4</field>
+  </record>
+  <record id="demo_matrix_warehouse_control" model="distribution.approval.matrix">
+    <field name="name">Demo Warehouse Control Approval</field>
+    <field name="process_key">warehouse_control</field>
+    <field name="department_id" ref="distribution_core.demo_dept_warehouse"/>
+    <field name="reviewer_id" ref="distribution_core.demo_user_reviewer"/>
+    <field name="final_approver_id" ref="distribution_core.demo_user_approver"/>
+    <field name="approval_hours">12</field>
+  </record>
+  <record id="demo_matrix_trip" model="distribution.approval.matrix">
+    <field name="name">Demo Distribution Trip Approval</field>
+    <field name="process_key">trip</field>
+    <field name="reviewer_id" ref="distribution_core.demo_user_reviewer"/>
+    <field name="final_approver_id" ref="distribution_core.demo_user_approver"/>
+    <field name="approval_hours">6</field>
+  </record>
+  <record id="demo_matrix_fleet_maintenance" model="distribution.approval.matrix">
+    <field name="name">Demo Fleet Workshop Approval</field>
+    <field name="process_key">fleet_maintenance</field>
+    <field name="min_amount">0</field>
+    <field name="max_amount">100000</field>
+    <field name="reviewer_id" ref="distribution_core.demo_user_reviewer"/>
+    <field name="final_approver_id" ref="distribution_core.demo_user_approver"/>
+    <field name="approval_hours">24</field>
+  </record>
+  <record id="demo_matrix_fleet_maintenance_high" model="distribution.approval.matrix">
+    <field name="name">Demo Fleet Workshop Approval (Major Repair)</field>
+    <field name="process_key">fleet_maintenance</field>
+    <field name="min_amount">100000</field>
+    <field name="reviewer_id" ref="distribution_core.demo_user_approver"/>
+    <field name="final_approver_id" ref="demo_user_senior_approver"/>
+    <field name="escalation_user_id" ref="demo_user_workflow_manager"/>
+    <field name="approval_hours">24</field>
+  </record>
+  <record id="demo_matrix_commission" model="distribution.approval.matrix">
+    <field name="name">Demo Sales Commission Approval</field>
+    <field name="process_key">commission</field>
+    <field name="department_id" ref="distribution_core.demo_dept_finance"/>
+    <field name="reviewer_id" ref="distribution_core.demo_user_approver"/>
+    <field name="final_approver_id" ref="demo_user_senior_approver"/>
+    <field name="approval_hours">48</field>
+  </record>
+  <record id="demo_matrix_site_access" model="distribution.approval.matrix">
+    <field name="name">Demo Site Access Approval</field>
+    <field name="process_key">site_access</field>
+    <field name="site_id" ref="distribution_core.demo_site_malindi"/>
+    <field name="reviewer_id" ref="distribution_core.demo_user_reviewer"/>
+    <field name="final_approver_id" ref="distribution_core.demo_user_approver"/>
+    <field name="approval_hours">2</field>
+  </record>
+  <record id="demo_matrix_non_core" model="distribution.approval.matrix">
+    <field name="name">Demo Non-Core Request Approval</field>
+    <field name="process_key">non_core</field>
+    <field name="reviewer_id" ref="distribution_core.demo_user_reviewer"/>
+    <field name="final_approver_id" ref="distribution_core.demo_user_approver"/>
+    <field name="approval_hours">48</field>
+  </record>
+
+  <!-- Archived rule, to show that inactive matrices are ignored during routing -->
+  <record id="demo_matrix_sales_commitment_legacy" model="distribution.approval.matrix">
+    <field name="name">Demo Sales Commitment Approval (Legacy, Archived)</field>
+    <field name="process_key">sales_commitment</field>
+    <field name="active" eval="False"/>
+    <field name="reviewer_id" ref="distribution_core.demo_user_reviewer"/>
+    <field name="final_approver_id" ref="distribution_core.demo_user_reviewer"/>
+    <field name="approval_hours">72</field>
+  </record>
+</odoo>

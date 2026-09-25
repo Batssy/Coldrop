@@ -1,1 +1,107 @@
-<odoo noupdate="1"><record id="distribution_core.demo_user_initiator" model="res.users"><field name="group_ids" eval="[(4, ref('product_returns.group_product_returns_user'))]"/></record><record id="distribution_core.demo_user_reviewer" model="res.users"><field name="group_ids" eval="[(4, ref('product_returns.group_product_returns_reviewer'))]"/></record><record id="distribution_core.demo_user_approver" model="res.users"><field name="group_ids" eval="[(4, ref('product_returns.group_product_returns_approver'))]"/></record></odoo>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+  <!-- Access for the demo users -->
+  <record id="distribution_core.demo_user_initiator" model="res.users">
+    <field name="group_ids" eval="[(4, ref('product_returns.group_product_returns_user'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_reviewer" model="res.users">
+    <field name="group_ids" eval="[(4, ref('product_returns.group_product_returns_reviewer'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('product_returns.group_product_returns_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_senior_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('product_returns.group_product_returns_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_workflow_manager" model="res.users">
+    <field name="group_ids" eval="[(4, ref('product_returns.group_product_returns_manager'))]"/>
+  </record>
+
+  <record id="demo_location_returns_quarantine" model="stock.location">
+    <field name="name">Returns Quarantine</field>
+    <field name="location_id" ref="stock.stock_location_stock"/>
+    <field name="usage">internal</field>
+  </record>
+
+  <!-- Damaged goods from a delivery: approved, ready to create the return picking -->
+  <record id="demo_return_wholesale_damage" model="product.return" uid="distribution_core.demo_user_initiator">
+    <field name="process_date" eval="(DateTime.today() - timedelta(days=2)).strftime('%Y-%m-%d')"/>
+    <field name="return_direction">customer</field>
+    <field name="partner_id" ref="distribution_core.demo_customer_wholesale"/>
+    <field name="reason">damage</field>
+    <field name="source_location_id" ref="stock.stock_location_customers"/>
+    <field name="quarantine_location_id" ref="demo_location_returns_quarantine"/>
+    <field name="amount">4600</field>
+    <field name="submission_note">Broken bottles found on offloading; photos attached to proof of delivery POD-MAL-0417.</field>
+  </record>
+  <record id="demo_return_wholesale_damage_cola" model="product.return.line">
+    <field name="return_id" ref="demo_return_wholesale_damage"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_cola_rgb'))]"/>
+    <field name="quantity">3</field>
+    <field name="disposition">quarantine</field>
+  </record>
+  <record id="demo_return_wholesale_damage_orange" model="product.return.line">
+    <field name="return_id" ref="demo_return_wholesale_damage"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_orange_pet'))]"/>
+    <field name="quantity">1</field>
+    <field name="disposition">dispose</field>
+  </record>
+
+  <!-- Short-dated water from the supermarket: submitted -->
+  <record id="demo_return_supermarket_expiry" model="product.return" uid="distribution_core.demo_user_initiator">
+    <field name="return_direction">customer</field>
+    <field name="partner_id" ref="distribution_core.demo_customer_supermarket"/>
+    <field name="reason">expiry</field>
+    <field name="source_location_id" ref="stock.stock_location_customers"/>
+    <field name="quarantine_location_id" ref="demo_location_returns_quarantine"/>
+    <field name="amount">10800</field>
+    <field name="submission_note">Stock below the 90-day minimum shelf life agreed with the chain.</field>
+  </record>
+  <record id="demo_return_supermarket_expiry_water" model="product.return.line">
+    <field name="return_id" ref="demo_return_supermarket_expiry"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_water_pet'))]"/>
+    <field name="quantity">12</field>
+    <field name="disposition">supplier</field>
+  </record>
+
+  <!-- Wrong SKU delivered to the kiosk: returned for correction -->
+  <record id="demo_return_kiosk_wrong_sku" model="product.return" uid="distribution_core.demo_user_initiator">
+    <field name="return_direction">customer</field>
+    <field name="partner_id" ref="distribution_core.demo_customer_kiosk"/>
+    <field name="reason">wrong</field>
+    <field name="source_location_id" ref="stock.stock_location_customers"/>
+    <field name="quarantine_location_id" ref="demo_location_returns_quarantine"/>
+    <field name="amount">2400</field>
+  </record>
+  <record id="demo_return_kiosk_wrong_sku_energy" model="product.return.line">
+    <field name="return_id" ref="demo_return_kiosk_wrong_sku"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_energy_can'))]"/>
+    <field name="quantity">1</field>
+    <field name="disposition">resalable</field>
+  </record>
+
+  <!-- Supplier recall: draft vendor return -->
+  <record id="demo_return_vendor_recall" model="product.return" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_warehouse"/>
+    <field name="return_direction">vendor</field>
+    <field name="partner_id" ref="distribution_core.demo_vendor"/>
+    <field name="reason">recall</field>
+    <field name="source_location_id" ref="stock.stock_location_stock"/>
+    <field name="quarantine_location_id" ref="demo_location_returns_quarantine"/>
+    <field name="amount">38000</field>
+    <field name="submission_note">Manufacturer recall notice for an energy drink batch with faulty can seams.</field>
+  </record>
+  <record id="demo_return_vendor_recall_energy" model="product.return.line">
+    <field name="return_id" ref="demo_return_vendor_recall"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_energy_can'))]"/>
+    <field name="quantity">20</field>
+    <field name="disposition">supplier</field>
+  </record>
+
+  <!-- Workflow -->
+  <function model="product.return" name="action_submit" eval="[[ref('demo_return_wholesale_damage'), ref('demo_return_supermarket_expiry'), ref('demo_return_kiosk_wrong_sku')]]" uid="distribution_core.demo_user_initiator"/>
+  <function model="product.return" name="action_review" eval="[[ref('demo_return_wholesale_damage')]]" uid="distribution_core.demo_user_reviewer"/>
+  <function model="product.return" name="action_approve" eval="[[ref('demo_return_wholesale_damage')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="product.return" name="write" eval="[[ref('demo_return_kiosk_wrong_sku')], {'action_reason': 'Attach a photo of the returned case and the original delivery note number.'}]"/>
+  <function model="product.return" name="action_return_correction" eval="[[ref('demo_return_kiosk_wrong_sku')]]" uid="distribution_core.demo_user_reviewer"/>
+</odoo>

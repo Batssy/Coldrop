@@ -1,1 +1,97 @@
-<odoo noupdate="1"><record id="distribution_core.demo_user_initiator" model="res.users"><field name="group_ids" eval="[(4, ref('credit_management.group_credit_management_user'))]"/></record><record id="distribution_core.demo_user_reviewer" model="res.users"><field name="group_ids" eval="[(4, ref('credit_management.group_credit_management_reviewer'))]"/></record><record id="distribution_core.demo_user_approver" model="res.users"><field name="group_ids" eval="[(4, ref('credit_management.group_credit_management_approver'))]"/></record></odoo>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+  <!-- Access for the demo users -->
+  <record id="distribution_core.demo_user_initiator" model="res.users">
+    <field name="group_ids" eval="[(4, ref('credit_management.group_credit_management_user'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_reviewer" model="res.users">
+    <field name="group_ids" eval="[(4, ref('credit_management.group_credit_management_reviewer'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('credit_management.group_credit_management_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_senior_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('credit_management.group_credit_management_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_workflow_manager" model="res.users">
+    <field name="group_ids" eval="[(4, ref('credit_management.group_credit_management_manager'))]"/>
+  </record>
+
+  <!-- High-limit facility: routed to the senior approver and applied to the customer on approval -->
+  <record id="demo_credit_wholesale_facility" model="credit.application" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_finance"/>
+    <field name="process_date" eval="(DateTime.today() - timedelta(days=20)).strftime('%Y-%m-%d')"/>
+    <field name="customer_id" ref="distribution_core.demo_customer_wholesale"/>
+    <field name="request_type">new</field>
+    <field name="requested_credit_limit">1500000</field>
+    <field name="requested_credit_days">30</field>
+    <field name="requested_payment_term_id" ref="account.account_payment_term_30days"/>
+    <field name="effective_date" eval="(DateTime.today() - timedelta(days=18)).strftime('%Y-%m-%d')"/>
+    <field name="review_date" eval="(DateTime.today() + relativedelta(months=6)).strftime('%Y-%m-%d')"/>
+    <field name="amount">1500000</field>
+    <field name="justification">Twelve months of cash trading averaging KES 1.1M per month with no returned cheques. Audited accounts and bank statements attached.</field>
+  </record>
+
+  <!-- Standard facility: reviewed, waiting for final approval -->
+  <record id="demo_credit_supermarket_facility" model="credit.application" uid="distribution_core.demo_user_initiator">
+    <field name="customer_id" ref="distribution_core.demo_customer_supermarket"/>
+    <field name="request_type">new</field>
+    <field name="requested_credit_limit">200000</field>
+    <field name="requested_credit_days">15</field>
+    <field name="requested_payment_term_id" ref="account.account_payment_term_15days"/>
+    <field name="review_date" eval="(DateTime.today() + relativedelta(months=3)).strftime('%Y-%m-%d')"/>
+    <field name="amount">200000</field>
+    <field name="justification">Three-branch supermarket chain; directors' guarantee provided. Requesting a starter limit for the first quarter.</field>
+  </record>
+
+  <!-- Temporary increase returned for more evidence -->
+  <record id="demo_credit_kiosk_temporary" model="credit.application" uid="distribution_core.demo_user_initiator">
+    <field name="customer_id" ref="distribution_core.demo_customer_kiosk"/>
+    <field name="request_type">temporary</field>
+    <field name="requested_credit_limit">30000</field>
+    <field name="requested_credit_days">7</field>
+    <field name="amount">30000</field>
+    <field name="justification">Peak holiday season stock-up ahead of the beach festival weekend.</field>
+  </record>
+
+  <!-- One-off exception rejected at review -->
+  <record id="demo_credit_wholesale_exception" model="credit.application" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_finance"/>
+    <field name="customer_id" ref="distribution_core.demo_customer_wholesale"/>
+    <field name="request_type">exception</field>
+    <field name="requested_credit_limit">2500000</field>
+    <field name="requested_credit_days">45</field>
+    <field name="amount">2500000</field>
+    <field name="justification">One-off exception for a county government tender supply.</field>
+  </record>
+
+  <!-- Nairobi facility still in draft -->
+  <record id="demo_credit_hotel_facility" model="credit.application" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_finance"/>
+    <field name="region_id" ref="distribution_core.demo_region_nairobi"/>
+    <field name="site_id" ref="distribution_core.demo_site_nairobi"/>
+    <field name="customer_id" ref="distribution_core.demo_customer_hotel"/>
+    <field name="request_type">new</field>
+    <field name="requested_credit_limit">400000</field>
+    <field name="requested_credit_days">30</field>
+    <field name="requested_payment_term_id" ref="account.account_payment_term_30days"/>
+    <field name="amount">400000</field>
+    <field name="justification">Hotel group account for minibar and banqueting supply.</field>
+  </record>
+
+  <!-- Workflow: wholesale facility approved (high tier: approver reviews, senior approver signs off) -->
+  <function model="credit.application" name="action_submit" eval="[[ref('demo_credit_wholesale_facility'), ref('demo_credit_supermarket_facility'), ref('demo_credit_kiosk_temporary'), ref('demo_credit_wholesale_exception')]]" uid="distribution_core.demo_user_initiator"/>
+  <function model="credit.application" name="action_review" eval="[[ref('demo_credit_wholesale_facility')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="credit.application" name="action_approve" eval="[[ref('demo_credit_wholesale_facility')]]" uid="workflow_approval.demo_user_senior_approver"/>
+
+  <!-- Workflow: supermarket facility reviewed -->
+  <function model="credit.application" name="action_review" eval="[[ref('demo_credit_supermarket_facility')]]" uid="distribution_core.demo_user_reviewer"/>
+
+  <!-- Workflow: kiosk returned for correction -->
+  <function model="credit.application" name="write" eval="[[ref('demo_credit_kiosk_temporary')], {'action_reason': 'Customer has traded for less than a month. Attach three months of M-Pesa till statements.'}]"/>
+  <function model="credit.application" name="action_return_correction" eval="[[ref('demo_credit_kiosk_temporary')]]" uid="distribution_core.demo_user_reviewer"/>
+
+  <!-- Workflow: exception rejected by the high-tier reviewer -->
+  <function model="credit.application" name="write" eval="[[ref('demo_credit_wholesale_exception')], {'action_reason': 'Exceeds the group exposure policy. Tender supply must be secured by an LPO-backed bank guarantee.'}]"/>
+  <function model="credit.application" name="action_reject" eval="[[ref('demo_credit_wholesale_exception')]]" uid="distribution_core.demo_user_approver"/>
+</odoo>

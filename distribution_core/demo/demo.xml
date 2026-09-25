@@ -1,21 +1,376 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo noupdate="1">
-<record id="demo_region_coast" model="distribution.region"><field name="name">Coast Region</field><field name="code">CST</field></record>
-<record id="demo_site_malindi" model="distribution.site"><field name="name">Malindi Distribution Centre</field><field name="code">MAL</field><field name="region_id" ref="demo_region_coast"/></record>
-<record id="demo_route_malindi_1" model="distribution.route"><field name="name">Malindi Central</field><field name="code">MAL-C01</field><field name="site_id" ref="demo_site_malindi"/></record>
-<record id="demo_dept_sales" model="hr.department"><field name="name">Demo Sales</field></record>
-<record id="demo_dept_finance" model="hr.department"><field name="name">Demo Finance</field></record>
-<record id="demo_dept_warehouse" model="hr.department"><field name="name">Demo Warehouse</field></record>
-<record id="demo_dept_procurement" model="hr.department"><field name="name">Demo Procurement</field></record>
-<record id="demo_user_initiator" model="res.users"><field name="name">Demo Initiator</field><field name="login">demo.distribution.initiator</field><field name="group_ids" eval="[(4, ref('base.group_user')), (4, ref('distribution_core.group_distribution_core_user'))]"/></record>
-<record id="demo_user_reviewer" model="res.users"><field name="name">Demo Reviewer</field><field name="login">demo.distribution.reviewer</field><field name="group_ids" eval="[(4, ref('base.group_user')), (4, ref('distribution_core.group_distribution_core_reviewer'))]"/></record>
-<record id="demo_user_approver" model="res.users"><field name="name">Demo Final Approver</field><field name="login">demo.distribution.approver</field><field name="group_ids" eval="[(4, ref('base.group_user')), (4, ref('distribution_core.group_distribution_core_approver'))]"/></record>
-<record id="demo_user_executive" model="res.users"><field name="name">Demo Executive Viewer</field><field name="login">demo.distribution.executive</field><field name="group_ids" eval="[(4, ref('base.group_user')), (4, ref('distribution_core.group_distribution_core_user'))]"/></record>
-<record id="demo_employee_reviewer" model="hr.employee"><field name="name">Demo Reviewer</field><field name="user_id" ref="demo_user_reviewer"/><field name="department_id" ref="demo_dept_sales"/><field name="distribution_region_id" ref="demo_region_coast"/><field name="distribution_site_id" ref="demo_site_malindi"/><field name="distribution_route_id" ref="demo_route_malindi_1"/></record>
-<record id="demo_employee_initiator" model="hr.employee"><field name="name">Demo Initiator</field><field name="user_id" ref="demo_user_initiator"/><field name="parent_id" ref="demo_employee_reviewer"/><field name="department_id" ref="demo_dept_sales"/><field name="distribution_region_id" ref="demo_region_coast"/><field name="distribution_site_id" ref="demo_site_malindi"/><field name="distribution_route_id" ref="demo_route_malindi_1"/></record>
-<record id="demo_employee_approver" model="hr.employee"><field name="name">Demo Final Approver</field><field name="user_id" ref="demo_user_approver"/><field name="department_id" ref="demo_dept_finance"/><field name="distribution_region_id" ref="demo_region_coast"/><field name="distribution_site_id" ref="demo_site_malindi"/></record>
-<record id="demo_vendor" model="res.partner"><field name="name">Demo Coastal Beverage Manufacturer</field><field name="supplier_rank">1</field></record>
-<record id="demo_customer_wholesale" model="res.partner"><field name="name">Demo Malindi Wholesale Customer</field><field name="customer_rank">1</field><field name="distribution_region_id" ref="demo_region_coast"/><field name="distribution_site_id" ref="demo_site_malindi"/><field name="distribution_route_id" ref="demo_route_malindi_1"/><field name="geo_latitude">-3.2192</field><field name="geo_longitude">40.1169</field></record>
-<record id="demo_product_crate" model="product.template"><field name="name">Demo Returnable Crate</field><field name="business_line">returnable</field><field name="distribution_sku">RTA-CRATE-24</field><field name="returnable_asset">1</field><field name="packaging_type">crate</field><field name="deposit_value">500</field><field name="replacement_value">650</field><field name="supplier_owner_id" ref="demo_vendor"/></record>
-<record id="demo_product_cola_rgb" model="product.template"><field name="name">Demo Cola 300ml RGB x24</field><field name="business_line">beverage</field><field name="distribution_sku">COLA-300-RGB-24</field><field name="brand_name">Demo Cola</field><field name="container_volume_ml">300</field><field name="units_per_pack">24</field><field name="packaging_type">rgb</field><field name="list_price">1200</field></record>
-<record id="demo_product_water_pet" model="product.template"><field name="name">Demo Water 500ml PET x24</field><field name="business_line">beverage</field><field name="distribution_sku">WATER-500-PET-24</field><field name="brand_name">Demo Water</field><field name="container_volume_ml">500</field><field name="units_per_pack">24</field><field name="packaging_type">pet</field><field name="list_price">900</field></record>
+  <!-- Users -->
+  <record id="demo_user_initiator" model="res.users">
+    <field name="name">Demo Initiator</field>
+    <field name="login">demo.distribution.initiator</field>
+    <field name="email">initiator@example.com</field>
+    <field name="group_ids" eval="[(4, ref('base.group_user')), (4, ref('distribution_core.group_distribution_core_user'))]"/>
+  </record>
+  <record id="demo_user_reviewer" model="res.users">
+    <field name="name">Demo Reviewer</field>
+    <field name="login">demo.distribution.reviewer</field>
+    <field name="email">reviewer@example.com</field>
+    <field name="group_ids" eval="[(4, ref('base.group_user')), (4, ref('distribution_core.group_distribution_core_reviewer'))]"/>
+  </record>
+  <record id="demo_user_approver" model="res.users">
+    <field name="name">Demo Final Approver</field>
+    <field name="login">demo.distribution.approver</field>
+    <field name="email">approver@example.com</field>
+    <field name="group_ids" eval="[(4, ref('base.group_user')), (4, ref('distribution_core.group_distribution_core_approver'))]"/>
+  </record>
+  <record id="demo_user_executive" model="res.users">
+    <field name="name">Demo Executive Viewer</field>
+    <field name="login">demo.distribution.executive</field>
+    <field name="email">executive@example.com</field>
+    <field name="group_ids" eval="[(4, ref('base.group_user')), (4, ref('distribution_core.group_distribution_core_user'))]"/>
+  </record>
+  <record id="demo_user_sales_rep" model="res.users">
+    <field name="name">Demo Sales Rep (Malindi Central)</field>
+    <field name="login">demo.distribution.salesrep</field>
+    <field name="email">salesrep@example.com</field>
+    <field name="group_ids" eval="[(4, ref('base.group_user')), (4, ref('distribution_core.group_distribution_core_user'))]"/>
+  </record>
+  <record id="demo_user_sales_agent" model="res.users">
+    <field name="name">Demo Sales Agent (Watamu)</field>
+    <field name="login">demo.distribution.salesagent</field>
+    <field name="email">salesagent@example.com</field>
+    <field name="group_ids" eval="[(4, ref('base.group_user')), (4, ref('distribution_core.group_distribution_core_user'))]"/>
+  </record>
+
+  <!-- Regions, sites and sub-regions -->
+  <record id="demo_region_coast" model="distribution.region">
+    <field name="name">Coast Region</field>
+    <field name="code">CST</field>
+    <field name="manager_id" ref="demo_user_approver"/>
+  </record>
+  <record id="demo_region_nairobi" model="distribution.region">
+    <field name="name">Nairobi Region</field>
+    <field name="code">NRB</field>
+    <field name="manager_id" ref="demo_user_approver"/>
+  </record>
+  <record id="demo_site_malindi" model="distribution.site">
+    <field name="name">Malindi Distribution Centre</field>
+    <field name="code">MAL</field>
+    <field name="region_id" ref="demo_region_coast"/>
+    <field name="manager_id" ref="demo_user_approver"/>
+    <field name="warehouse_id" ref="stock.warehouse0"/>
+    <field name="latitude">-3.2175</field>
+    <field name="longitude">40.1191</field>
+    <field name="geofence_radius_m">200</field>
+  </record>
+  <record id="demo_site_nairobi" model="distribution.site">
+    <field name="name">Nairobi Distribution Centre</field>
+    <field name="code">NBO</field>
+    <field name="region_id" ref="demo_region_nairobi"/>
+    <field name="manager_id" ref="demo_user_approver"/>
+    <field name="latitude">-1.3197</field>
+    <field name="longitude">36.8510</field>
+  </record>
+  <record id="demo_subregion_malindi_town" model="distribution.subregion">
+    <field name="name">Malindi Town</field>
+    <field name="code">CST-MAL</field>
+    <field name="region_id" ref="demo_region_coast"/>
+    <field name="site_id" ref="demo_site_malindi"/>
+    <field name="manager_id" ref="demo_user_reviewer"/>
+  </record>
+  <record id="demo_subregion_watamu" model="distribution.subregion">
+    <field name="name">Watamu &amp; Gede</field>
+    <field name="code">CST-WAT</field>
+    <field name="region_id" ref="demo_region_coast"/>
+    <field name="site_id" ref="demo_site_malindi"/>
+    <field name="manager_id" ref="demo_user_reviewer"/>
+  </record>
+
+  <!-- Departments -->
+  <record id="demo_dept_sales" model="hr.department"><field name="name">Demo Sales</field></record>
+  <record id="demo_dept_finance" model="hr.department"><field name="name">Demo Finance</field></record>
+  <record id="demo_dept_warehouse" model="hr.department"><field name="name">Demo Warehouse</field></record>
+  <record id="demo_dept_procurement" model="hr.department"><field name="name">Demo Procurement</field></record>
+  <record id="demo_dept_logistics" model="hr.department"><field name="name">Demo Logistics</field></record>
+
+  <!-- Employees -->
+  <record id="demo_employee_reviewer" model="hr.employee">
+    <field name="name">Demo Reviewer</field>
+    <field name="user_id" ref="demo_user_reviewer"/>
+    <field name="department_id" ref="demo_dept_sales"/>
+    <field name="distribution_region_id" ref="demo_region_coast"/>
+    <field name="distribution_site_id" ref="demo_site_malindi"/>
+    <field name="distribution_cost_center">MAL-SALES</field>
+  </record>
+  <record id="demo_employee_initiator" model="hr.employee">
+    <field name="name">Demo Initiator</field>
+    <field name="user_id" ref="demo_user_initiator"/>
+    <field name="parent_id" ref="demo_employee_reviewer"/>
+    <field name="department_id" ref="demo_dept_sales"/>
+    <field name="distribution_region_id" ref="demo_region_coast"/>
+    <field name="distribution_site_id" ref="demo_site_malindi"/>
+    <field name="distribution_cost_center">MAL-SALES</field>
+    <field name="distribution_default_warehouse_id" ref="stock.warehouse0"/>
+  </record>
+  <record id="demo_employee_approver" model="hr.employee">
+    <field name="name">Demo Final Approver</field>
+    <field name="user_id" ref="demo_user_approver"/>
+    <field name="department_id" ref="demo_dept_finance"/>
+    <field name="distribution_region_id" ref="demo_region_coast"/>
+    <field name="distribution_site_id" ref="demo_site_malindi"/>
+    <field name="distribution_cost_center">MAL-FIN</field>
+  </record>
+  <record id="demo_employee_sales_rep" model="hr.employee">
+    <field name="name">Demo Sales Rep (Malindi Central)</field>
+    <field name="user_id" ref="demo_user_sales_rep"/>
+    <field name="parent_id" ref="demo_employee_reviewer"/>
+    <field name="department_id" ref="demo_dept_sales"/>
+    <field name="distribution_region_id" ref="demo_region_coast"/>
+    <field name="distribution_site_id" ref="demo_site_malindi"/>
+    <field name="distribution_cost_center">MAL-SALES</field>
+    <field name="distribution_employment_type">full_time</field>
+  </record>
+  <record id="demo_employee_sales_agent" model="hr.employee">
+    <field name="name">Demo Sales Agent (Watamu)</field>
+    <field name="user_id" ref="demo_user_sales_agent"/>
+    <field name="parent_id" ref="demo_employee_reviewer"/>
+    <field name="department_id" ref="demo_dept_sales"/>
+    <field name="distribution_region_id" ref="demo_region_coast"/>
+    <field name="distribution_site_id" ref="demo_site_malindi"/>
+    <field name="distribution_cost_center">MAL-SALES</field>
+    <field name="distribution_employment_type">agent</field>
+  </record>
+  <record id="demo_employee_driver_1" model="hr.employee">
+    <field name="name">Demo Driver (Malindi Central)</field>
+    <field name="department_id" ref="demo_dept_logistics"/>
+    <field name="distribution_region_id" ref="demo_region_coast"/>
+    <field name="distribution_site_id" ref="demo_site_malindi"/>
+    <field name="distribution_cost_center">MAL-LOG</field>
+    <field name="is_distribution_driver" eval="True"/>
+  </record>
+  <record id="demo_employee_driver_2" model="hr.employee">
+    <field name="name">Demo Driver (Watamu)</field>
+    <field name="department_id" ref="demo_dept_logistics"/>
+    <field name="distribution_region_id" ref="demo_region_coast"/>
+    <field name="distribution_site_id" ref="demo_site_malindi"/>
+    <field name="distribution_cost_center">MAL-LOG</field>
+    <field name="is_distribution_driver" eval="True"/>
+    <field name="distribution_employment_type">contract</field>
+  </record>
+
+  <!-- Routes -->
+  <record id="demo_route_malindi_1" model="distribution.route">
+    <field name="name">Malindi Central</field>
+    <field name="code">MAL-C01</field>
+    <field name="site_id" ref="demo_site_malindi"/>
+    <field name="salesperson_id" ref="demo_user_sales_rep"/>
+    <field name="driver_id" ref="demo_employee_driver_1"/>
+  </record>
+  <record id="demo_route_watamu" model="distribution.route">
+    <field name="name">Watamu &amp; Gede</field>
+    <field name="code">MAL-W02</field>
+    <field name="site_id" ref="demo_site_malindi"/>
+    <field name="salesperson_id" ref="demo_user_sales_agent"/>
+    <field name="driver_id" ref="demo_employee_driver_2"/>
+  </record>
+  <record id="demo_route_nairobi_cbd" model="distribution.route">
+    <field name="name">Nairobi CBD</field>
+    <field name="code">NBO-C01</field>
+    <field name="site_id" ref="demo_site_nairobi"/>
+  </record>
+
+  <!-- Default routes for the employees above -->
+  <record id="demo_employee_reviewer" model="hr.employee">
+    <field name="distribution_route_id" ref="demo_route_malindi_1"/>
+  </record>
+  <record id="demo_employee_initiator" model="hr.employee">
+    <field name="distribution_route_id" ref="demo_route_malindi_1"/>
+  </record>
+  <record id="demo_employee_sales_rep" model="hr.employee">
+    <field name="distribution_route_id" ref="demo_route_malindi_1"/>
+  </record>
+  <record id="demo_employee_sales_agent" model="hr.employee">
+    <field name="distribution_route_id" ref="demo_route_watamu"/>
+  </record>
+  <record id="demo_employee_driver_1" model="hr.employee">
+    <field name="distribution_route_id" ref="demo_route_malindi_1"/>
+  </record>
+  <record id="demo_employee_driver_2" model="hr.employee">
+    <field name="distribution_route_id" ref="demo_route_watamu"/>
+  </record>
+
+  <!-- Vendors -->
+  <record id="demo_vendor" model="res.partner">
+    <field name="name">Demo Coastal Beverage Manufacturer</field>
+    <field name="is_company" eval="True"/>
+    <field name="supplier_rank">1</field>
+    <field name="city">Mombasa</field>
+    <field name="email">orders@coastal-beverages.example.com</field>
+  </record>
+  <record id="demo_vendor_water" model="res.partner">
+    <field name="name">Demo Highland Water Bottlers</field>
+    <field name="is_company" eval="True"/>
+    <field name="supplier_rank">1</field>
+    <field name="city">Nyeri</field>
+    <field name="email">sales@highland-water.example.com</field>
+  </record>
+
+  <!-- Customers -->
+  <record id="demo_customer_wholesale" model="res.partner">
+    <field name="name">Demo Malindi Wholesale Customer</field>
+    <field name="is_company" eval="True"/>
+    <field name="customer_rank">1</field>
+    <field name="city">Malindi</field>
+    <field name="distribution_region_id" ref="demo_region_coast"/>
+    <field name="distribution_subregion_id" ref="demo_subregion_malindi_town"/>
+    <field name="distribution_site_id" ref="demo_site_malindi"/>
+    <field name="distribution_route_id" ref="demo_route_malindi_1"/>
+    <field name="distribution_onboarded_on" eval="(DateTime.today() - relativedelta(years=1)).strftime('%Y-%m-%d')"/>
+    <field name="distribution_onboarding_salesperson_id" ref="demo_user_sales_rep"/>
+    <field name="geo_latitude">-3.2192</field>
+    <field name="geo_longitude">40.1169</field>
+    <field name="location_verified" eval="True"/>
+    <field name="location_verified_by" ref="demo_user_reviewer"/>
+    <field name="location_verified_on" eval="(DateTime.today() - relativedelta(months=11)).strftime('%Y-%m-%d 10:00:00')"/>
+  </record>
+  <record id="demo_customer_supermarket" model="res.partner">
+    <field name="name">Demo Coast Supermarkets Ltd</field>
+    <field name="is_company" eval="True"/>
+    <field name="customer_rank">1</field>
+    <field name="city">Malindi</field>
+    <field name="distribution_region_id" ref="demo_region_coast"/>
+    <field name="distribution_subregion_id" ref="demo_subregion_malindi_town"/>
+    <field name="distribution_site_id" ref="demo_site_malindi"/>
+    <field name="distribution_route_id" ref="demo_route_malindi_1"/>
+    <field name="distribution_onboarded_on" eval="(DateTime.today() - timedelta(days=45)).strftime('%Y-%m-%d')"/>
+    <field name="distribution_onboarding_salesperson_id" ref="demo_user_sales_rep"/>
+    <field name="geo_latitude">-3.2138</field>
+    <field name="geo_longitude">40.1203</field>
+  </record>
+  <record id="demo_customer_kiosk" model="res.partner">
+    <field name="name">Demo Watamu Beach Kiosk</field>
+    <field name="customer_rank">1</field>
+    <field name="city">Watamu</field>
+    <field name="distribution_region_id" ref="demo_region_coast"/>
+    <field name="distribution_subregion_id" ref="demo_subregion_watamu"/>
+    <field name="distribution_site_id" ref="demo_site_malindi"/>
+    <field name="distribution_route_id" ref="demo_route_watamu"/>
+    <field name="distribution_onboarded_on" eval="DateTime.today().replace(day=1).strftime('%Y-%m-%d')"/>
+    <field name="distribution_onboarding_salesperson_id" ref="demo_user_sales_agent"/>
+    <field name="geo_latitude">-3.3548</field>
+    <field name="geo_longitude">40.0247</field>
+    <field name="geofence_radius_m">50</field>
+  </record>
+  <record id="demo_customer_hotel" model="res.partner">
+    <field name="name">Demo Nairobi Hotel &amp; Suites</field>
+    <field name="is_company" eval="True"/>
+    <field name="customer_rank">1</field>
+    <field name="city">Nairobi</field>
+    <field name="distribution_region_id" ref="demo_region_nairobi"/>
+    <field name="distribution_site_id" ref="demo_site_nairobi"/>
+    <field name="distribution_route_id" ref="demo_route_nairobi_cbd"/>
+    <field name="distribution_onboarded_on" eval="DateTime.today().replace(day=1).strftime('%Y-%m-%d')"/>
+    <field name="geo_latitude">-1.2864</field>
+    <field name="geo_longitude">36.8172</field>
+  </record>
+
+  <!-- Returnable assets -->
+  <record id="demo_product_crate" model="product.template">
+    <field name="name">Demo Returnable Crate</field>
+    <field name="business_line">returnable</field>
+    <field name="distribution_sku">RTA-CRATE-24</field>
+    <field name="returnable_asset">1</field>
+    <field name="packaging_type">crate</field>
+    <field name="deposit_value">500</field>
+    <field name="replacement_value">650</field>
+    <field name="supplier_owner_id" ref="demo_vendor"/>
+  </record>
+  <record id="demo_product_bottle_rgb" model="product.template">
+    <field name="name">Demo Returnable Glass Bottle 300ml</field>
+    <field name="business_line">returnable</field>
+    <field name="distribution_sku">RTA-RGB-300</field>
+    <field name="returnable_asset">1</field>
+    <field name="packaging_type">rgb</field>
+    <field name="deposit_value">25</field>
+    <field name="replacement_value">35</field>
+    <field name="supplier_owner_id" ref="demo_vendor"/>
+  </record>
+
+  <!-- Core beverages -->
+  <record id="demo_product_cola_rgb" model="product.template">
+    <field name="name">Demo Cola 300ml RGB x24</field>
+    <field name="business_line">beverage</field>
+    <field name="distribution_sku">COLA-300-RGB-24</field>
+    <field name="supplier_sku">CBM-COLA-300R</field>
+    <field name="brand_name">Demo Cola</field>
+    <field name="flavour">Cola</field>
+    <field name="container_volume_ml">300</field>
+    <field name="units_per_pack">24</field>
+    <field name="packaging_type">rgb</field>
+    <field name="returnable_units_per_sale_pack">1</field>
+    <field name="returnable_product_id" model="product.product" search="[('product_tmpl_id', '=', ref('demo_product_crate'))]"/>
+    <field name="list_price">1200</field>
+    <field name="standard_price">950</field>
+  </record>
+  <record id="demo_product_water_pet" model="product.template">
+    <field name="name">Demo Water 500ml PET x24</field>
+    <field name="business_line">beverage</field>
+    <field name="distribution_sku">WATER-500-PET-24</field>
+    <field name="supplier_sku">HWB-WTR-500P</field>
+    <field name="brand_name">Demo Water</field>
+    <field name="container_volume_ml">500</field>
+    <field name="units_per_pack">24</field>
+    <field name="packaging_type">pet</field>
+    <field name="list_price">900</field>
+    <field name="standard_price">700</field>
+    <field name="minimum_customer_shelf_life_days">90</field>
+  </record>
+  <record id="demo_product_orange_pet" model="product.template">
+    <field name="name">Demo Orange Soda 500ml PET x24</field>
+    <field name="business_line">beverage</field>
+    <field name="distribution_sku">ORNG-500-PET-24</field>
+    <field name="supplier_sku">CBM-ORG-500P</field>
+    <field name="brand_name">Demo Orange</field>
+    <field name="flavour">Orange</field>
+    <field name="container_volume_ml">500</field>
+    <field name="units_per_pack">24</field>
+    <field name="packaging_type">pet</field>
+    <field name="list_price">1000</field>
+    <field name="standard_price">780</field>
+  </record>
+  <record id="demo_product_energy_can" model="product.template">
+    <field name="name">Demo Energy Drink 250ml Can x24</field>
+    <field name="business_line">beverage</field>
+    <field name="distribution_sku">ENRG-250-CAN-24</field>
+    <field name="supplier_sku">CBM-ENR-250C</field>
+    <field name="brand_name">Demo Energy</field>
+    <field name="container_volume_ml">250</field>
+    <field name="units_per_pack">24</field>
+    <field name="packaging_type">can</field>
+    <field name="list_price">2400</field>
+    <field name="standard_price">1900</field>
+    <field name="promotion_eligible" eval="True"/>
+    <field name="promotion_code">ENERGY-LAUNCH</field>
+    <field name="promotion_start" eval="DateTime.today().replace(day=1).strftime('%Y-%m-%d')"/>
+    <field name="promotion_end" eval="(DateTime.today() + relativedelta(months=2)).strftime('%Y-%m-%d')"/>
+  </record>
+
+  <!-- Promotional, non-core and service items -->
+  <record id="demo_product_tshirt" model="product.template">
+    <field name="name">Demo Branded Promo T-Shirt</field>
+    <field name="business_line">promotion</field>
+    <field name="distribution_sku">PROMO-TSHIRT</field>
+    <field name="list_price">0</field>
+    <field name="standard_price">350</field>
+  </record>
+  <record id="demo_product_cooler" model="product.template">
+    <field name="name">Demo Branded Display Cooler</field>
+    <field name="business_line">non_core</field>
+    <field name="distribution_sku">NC-COOLER-400L</field>
+    <field name="list_price">52000</field>
+    <field name="standard_price">45000</field>
+  </record>
+  <record id="demo_product_delivery_service" model="product.template">
+    <field name="name">Demo Third-Party Delivery Service</field>
+    <field name="business_line">service</field>
+    <field name="type">service</field>
+    <field name="distribution_sku">SVC-DELIVERY</field>
+    <field name="list_price">3500</field>
+  </record>
 </odoo>

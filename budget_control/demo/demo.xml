@@ -1,1 +1,132 @@
-<odoo noupdate="1"><record id="distribution_core.demo_user_initiator" model="res.users"><field name="group_ids" eval="[(4, ref('budget_control.group_budget_control_user'))]"/></record><record id="distribution_core.demo_user_reviewer" model="res.users"><field name="group_ids" eval="[(4, ref('budget_control.group_budget_control_reviewer'))]"/></record><record id="distribution_core.demo_user_approver" model="res.users"><field name="group_ids" eval="[(4, ref('budget_control.group_budget_control_approver'))]"/></record></odoo>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+  <!-- Access for the demo users -->
+  <record id="distribution_core.demo_user_initiator" model="res.users">
+    <field name="group_ids" eval="[(4, ref('budget_control.group_budget_control_user'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_reviewer" model="res.users">
+    <field name="group_ids" eval="[(4, ref('budget_control.group_budget_control_reviewer'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('budget_control.group_budget_control_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_senior_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('budget_control.group_budget_control_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_workflow_manager" model="res.users">
+    <field name="group_ids" eval="[(4, ref('budget_control.group_budget_control_manager'))]"/>
+  </record>
+
+  <!-- Previous quarter: full lifecycle through independently approved closure -->
+  <record id="demo_budget_previous_quarter" model="budget.control" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_finance"/>
+    <field name="cost_center">MAL-FIN</field>
+    <field name="process_date" eval="(DateTime.today().replace(day=1) - relativedelta(months=3)).strftime('%Y-%m-%d')"/>
+    <field name="period_start" eval="(DateTime.today().replace(day=1) - relativedelta(months=3)).strftime('%Y-%m-%d')"/>
+    <field name="period_end" eval="(DateTime.today().replace(day=1) - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+    <field name="amount">2400000</field>
+    <field name="submission_note">Malindi quarterly purchasing budget for core beverages.</field>
+    <field name="closure_note">Quarter reconciled. Cola over budget by 5% on hotel season demand; water under budget. Net variance within tolerance.</field>
+  </record>
+  <record id="demo_budget_previous_quarter_cola" model="budget.control.line">
+    <field name="budget_id" ref="demo_budget_previous_quarter"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_cola_rgb'))]"/>
+    <field name="budget_amount">1200000</field>
+    <field name="actual_amount">1260000</field>
+  </record>
+  <record id="demo_budget_previous_quarter_water" model="budget.control.line">
+    <field name="budget_id" ref="demo_budget_previous_quarter"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_water_pet'))]"/>
+    <field name="budget_amount">700000</field>
+    <field name="actual_amount">640000</field>
+  </record>
+  <record id="demo_budget_previous_quarter_orange" model="budget.control.line">
+    <field name="budget_id" ref="demo_budget_previous_quarter"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_orange_pet'))]"/>
+    <field name="budget_amount">500000</field>
+    <field name="actual_amount">520000</field>
+  </record>
+
+  <!-- Current quarter: approved and being executed -->
+  <record id="demo_budget_current_quarter" model="budget.control" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_finance"/>
+    <field name="cost_center">MAL-FIN</field>
+    <field name="period_start" eval="DateTime.today().replace(day=1).strftime('%Y-%m-%d')"/>
+    <field name="period_end" eval="(DateTime.today().replace(day=1) + relativedelta(months=3) - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+    <field name="amount">2800000</field>
+    <field name="submission_note">Malindi quarterly purchasing budget including the energy drink launch.</field>
+  </record>
+  <record id="demo_budget_current_quarter_cola" model="budget.control.line">
+    <field name="budget_id" ref="demo_budget_current_quarter"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_cola_rgb'))]"/>
+    <field name="budget_amount">1300000</field>
+    <field name="actual_amount">410000</field>
+  </record>
+  <record id="demo_budget_current_quarter_water" model="budget.control.line">
+    <field name="budget_id" ref="demo_budget_current_quarter"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_water_pet'))]"/>
+    <field name="budget_amount">700000</field>
+    <field name="actual_amount">230000</field>
+  </record>
+  <record id="demo_budget_current_quarter_energy" model="budget.control.line">
+    <field name="budget_id" ref="demo_budget_current_quarter"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_energy_can'))]"/>
+    <field name="budget_amount">800000</field>
+    <field name="actual_amount">120000</field>
+  </record>
+
+  <!-- Promotion budget: submitted and past its approval target, so the escalation cron picks it up -->
+  <record id="demo_budget_energy_launch" model="budget.control" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_finance"/>
+    <field name="cost_center">MAL-MKT</field>
+    <field name="period_start" eval="DateTime.today().replace(day=1).strftime('%Y-%m-%d')"/>
+    <field name="period_end" eval="(DateTime.today().replace(day=1) + relativedelta(months=2) - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+    <field name="amount">400000</field>
+    <field name="submission_note">Launch promotion for Demo Energy Drink: tastings, branded coolers and promo T-shirts.</field>
+  </record>
+  <record id="demo_budget_energy_launch_tshirt" model="budget.control.line">
+    <field name="budget_id" ref="demo_budget_energy_launch"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_tshirt'))]"/>
+    <field name="budget_amount">70000</field>
+  </record>
+  <record id="demo_budget_energy_launch_cooler" model="budget.control.line">
+    <field name="budget_id" ref="demo_budget_energy_launch"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_cooler'))]"/>
+    <field name="budget_amount">330000</field>
+  </record>
+
+  <!-- Nairobi: still being drafted -->
+  <record id="demo_budget_nairobi_draft" model="budget.control" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_finance"/>
+    <field name="region_id" ref="distribution_core.demo_region_nairobi"/>
+    <field name="site_id" ref="distribution_core.demo_site_nairobi"/>
+    <field name="cost_center">NBO-FIN</field>
+    <field name="period_start" eval="(DateTime.today().replace(day=1) + relativedelta(months=1)).strftime('%Y-%m-%d')"/>
+    <field name="period_end" eval="(DateTime.today().replace(day=1) + relativedelta(months=4) - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+    <field name="amount">950000</field>
+  </record>
+  <record id="demo_budget_nairobi_draft_water" model="budget.control.line">
+    <field name="budget_id" ref="demo_budget_nairobi_draft"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_water_pet'))]"/>
+    <field name="budget_amount">950000</field>
+  </record>
+
+  <!-- Workflow: previous quarter, submitted through to closure -->
+  <function model="budget.control" name="action_submit" eval="[[ref('demo_budget_previous_quarter')]]" uid="distribution_core.demo_user_initiator"/>
+  <function model="budget.control" name="action_review" eval="[[ref('demo_budget_previous_quarter')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="budget.control" name="action_approve" eval="[[ref('demo_budget_previous_quarter')]]" uid="workflow_approval.demo_user_senior_approver"/>
+  <function model="budget.control" name="action_start_processing" eval="[[ref('demo_budget_previous_quarter')]]" uid="workflow_approval.demo_user_senior_approver"/>
+  <function model="budget.control" name="action_reconcile" eval="[[ref('demo_budget_previous_quarter')]]" uid="workflow_approval.demo_user_senior_approver"/>
+  <function model="budget.control" name="action_request_closure" eval="[[ref('demo_budget_previous_quarter')]]" uid="distribution_core.demo_user_initiator"/>
+  <function model="budget.control" name="action_approve_closure" eval="[[ref('demo_budget_previous_quarter')]]" uid="workflow_approval.demo_user_senior_approver"/>
+
+  <!-- Workflow: current quarter, approved and processing -->
+  <function model="budget.control" name="action_submit" eval="[[ref('demo_budget_current_quarter')]]" uid="distribution_core.demo_user_initiator"/>
+  <function model="budget.control" name="action_review" eval="[[ref('demo_budget_current_quarter')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="budget.control" name="action_approve" eval="[[ref('demo_budget_current_quarter')]]" uid="workflow_approval.demo_user_senior_approver"/>
+  <function model="budget.control" name="action_start_processing" eval="[[ref('demo_budget_current_quarter')]]" uid="workflow_approval.demo_user_senior_approver"/>
+
+  <!-- Workflow: energy launch, submitted three days ago (48-hour target) -->
+  <function model="budget.control" name="action_submit" eval="[[ref('demo_budget_energy_launch')]]" uid="distribution_core.demo_user_initiator"/>
+  <function model="budget.control" name="write" eval="[[ref('demo_budget_energy_launch')], {'submitted_at': (DateTime.now() - timedelta(days=3)).strftime('%Y-%m-%d %H:%M:%S')}]"/>
+</odoo>

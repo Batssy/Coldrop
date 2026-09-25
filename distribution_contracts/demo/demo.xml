@@ -1,1 +1,105 @@
-<odoo noupdate="1"><record id="distribution_core.demo_user_initiator" model="res.users"><field name="group_ids" eval="[(4, ref('distribution_contracts.group_distribution_contracts_user'))]"/></record><record id="distribution_core.demo_user_reviewer" model="res.users"><field name="group_ids" eval="[(4, ref('distribution_contracts.group_distribution_contracts_reviewer'))]"/></record><record id="distribution_core.demo_user_approver" model="res.users"><field name="group_ids" eval="[(4, ref('distribution_contracts.group_distribution_contracts_approver'))]"/></record></odoo>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+  <!-- Access for the demo users -->
+  <record id="distribution_core.demo_user_initiator" model="res.users">
+    <field name="group_ids" eval="[(4, ref('distribution_contracts.group_distribution_contracts_user'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_reviewer" model="res.users">
+    <field name="group_ids" eval="[(4, ref('distribution_contracts.group_distribution_contracts_reviewer'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('distribution_contracts.group_distribution_contracts_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_senior_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('distribution_contracts.group_distribution_contracts_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_workflow_manager" model="res.users">
+    <field name="group_ids" eval="[(4, ref('distribution_contracts.group_distribution_contracts_manager'))]"/>
+  </record>
+
+  <!-- Supplier distribution agreement: active -->
+  <record id="demo_contract_supplier_coastal" model="distribution.contract" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_procurement"/>
+    <field name="process_date" eval="(DateTime.today() - relativedelta(months=2)).strftime('%Y-%m-%d')"/>
+    <field name="contract_type">supplier</field>
+    <field name="partner_id" ref="distribution_core.demo_vendor"/>
+    <field name="start_date" eval="(DateTime.today().replace(day=1) - relativedelta(months=2)).strftime('%Y-%m-%d')"/>
+    <field name="end_date" eval="(DateTime.today().replace(day=1) + relativedelta(months=10) - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+    <field name="territory">Coast Region (exclusive)</field>
+    <field name="payment_term_id" ref="account.account_payment_term_30days"/>
+    <field name="returnables_required" eval="True"/>
+    <field name="amount">12000000</field>
+    <field name="terms" type="html">
+      <p>Exclusive distribution of Demo Cola, Demo Orange and Demo Energy across the Coast Region.</p>
+      <ul>
+        <li>Minimum annual volume: 12,000 cases.</li>
+        <li>Crates and bottles remain supplier property; deposits are reconciled monthly.</li>
+        <li>Volume rebate of 2% above 110% of target.</li>
+      </ul>
+    </field>
+  </record>
+
+  <!-- Customer agreement: active -->
+  <record id="demo_contract_customer_wholesale" model="distribution.contract" uid="distribution_core.demo_user_initiator">
+    <field name="contract_type">customer</field>
+    <field name="partner_id" ref="distribution_core.demo_customer_wholesale"/>
+    <field name="start_date" eval="(DateTime.today().replace(day=1) - relativedelta(months=1)).strftime('%Y-%m-%d')"/>
+    <field name="end_date" eval="(DateTime.today().replace(day=1) + relativedelta(months=11) - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+    <field name="territory">Malindi Town</field>
+    <field name="payment_term_id" ref="account.account_payment_term_30days"/>
+    <field name="credit_limit">1500000</field>
+    <field name="returnables_required" eval="True"/>
+    <field name="amount">3600000</field>
+    <field name="terms" type="html">
+      <p>Annual supply agreement with twice-weekly delivery on the Malindi Central route. Empties are collected on every delivery.</p>
+    </field>
+  </record>
+
+  <!-- Chain agreement: reviewed, waiting for the senior approver -->
+  <record id="demo_contract_chain_supermarket" model="distribution.contract" uid="distribution_core.demo_user_initiator">
+    <field name="contract_type">chain</field>
+    <field name="partner_id" ref="distribution_core.demo_customer_supermarket"/>
+    <field name="start_date" eval="(DateTime.today().replace(day=1) + relativedelta(months=1)).strftime('%Y-%m-%d')"/>
+    <field name="end_date" eval="(DateTime.today().replace(day=1) + relativedelta(months=13) - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+    <field name="territory">All Coast Supermarkets branches</field>
+    <field name="payment_term_id" ref="account.account_payment_term_15days"/>
+    <field name="credit_limit">200000</field>
+    <field name="amount">5000000</field>
+    <field name="terms" type="html">
+      <p>Chain listing for all branches, with a shelf planogram, monthly promotions and a 1.5% listing fee.</p>
+    </field>
+  </record>
+
+  <!-- Expired supplier agreement: closed -->
+  <record id="demo_contract_supplier_water_expired" model="distribution.contract" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_procurement"/>
+    <field name="process_date" eval="(DateTime.today() - relativedelta(years=1)).strftime('%Y-%m-%d')"/>
+    <field name="contract_type">supplier</field>
+    <field name="partner_id" ref="distribution_core.demo_vendor_water"/>
+    <field name="start_date" eval="(DateTime.today() - relativedelta(years=1)).strftime('%Y-%m-%d')"/>
+    <field name="end_date" eval="(DateTime.today() - timedelta(days=10)).strftime('%Y-%m-%d')"/>
+    <field name="territory">Coast Region</field>
+    <field name="payment_term_id" ref="account.account_payment_term_30days"/>
+    <field name="returnables_required" eval="False"/>
+    <field name="amount">4200000</field>
+  </record>
+
+  <!-- Nairobi hotel agreement in draft -->
+  <record id="demo_contract_customer_hotel" model="distribution.contract" uid="distribution_core.demo_user_initiator">
+    <field name="region_id" ref="distribution_core.demo_region_nairobi"/>
+    <field name="site_id" ref="distribution_core.demo_site_nairobi"/>
+    <field name="contract_type">customer</field>
+    <field name="partner_id" ref="distribution_core.demo_customer_hotel"/>
+    <field name="start_date" eval="(DateTime.today().replace(day=1) + relativedelta(months=1)).strftime('%Y-%m-%d')"/>
+    <field name="end_date" eval="(DateTime.today().replace(day=1) + relativedelta(months=7) - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+    <field name="territory">Nairobi CBD</field>
+    <field name="amount">1800000</field>
+  </record>
+
+  <!-- Workflow (contracts route to the approver for review and the senior approver for sign-off) -->
+  <function model="distribution.contract" name="action_submit" eval="[[ref('demo_contract_supplier_coastal'), ref('demo_contract_customer_wholesale'), ref('demo_contract_chain_supermarket'), ref('demo_contract_supplier_water_expired')]]" uid="distribution_core.demo_user_initiator"/>
+  <function model="distribution.contract" name="action_review" eval="[[ref('demo_contract_supplier_coastal'), ref('demo_contract_customer_wholesale'), ref('demo_contract_chain_supermarket'), ref('demo_contract_supplier_water_expired')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="distribution.contract" name="action_approve" eval="[[ref('demo_contract_supplier_coastal'), ref('demo_contract_customer_wholesale'), ref('demo_contract_supplier_water_expired')]]" uid="workflow_approval.demo_user_senior_approver"/>
+  <function model="distribution.contract" name="action_start_processing" eval="[[ref('demo_contract_supplier_coastal')]]" uid="workflow_approval.demo_user_senior_approver"/>
+  <function model="distribution.contract" name="action_close" eval="[[ref('demo_contract_supplier_water_expired')]]" uid="workflow_approval.demo_user_senior_approver"/>
+</odoo>

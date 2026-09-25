@@ -16,17 +16,17 @@ class ApprovalMatrix(models.Model):
 
     @api.model
     def _cron_escalate_overdue_approvals(self):
-        model_keys={
-            'distribution.contract':'contract','purchase.commitment':'purchase_commitment','sales.commitment':'sales_commitment',
-            'credit.application':'credit','sales.exception':'sales_exception','warehouse.control':'warehouse',
-            'returnable.asset.transaction':'returnables','product.return':'product_return','distribution.trip':'trip',
-            'cash.collection':'cash','fleet.workshop.request':'fleet','sales.commission.batch':'commission',
-            'budget.control':'budget','site.access.request':'site_security','non.core.request':'non_core',
-        }
+        model_names=[
+            'distribution.contract','purchase.commitment','sales.commitment','credit.application','sales.exception',
+            'warehouse.control','returnable.asset.transaction','product.return','distribution.trip','cash.collection',
+            'fleet.workshop.request','sales.commission.batch','budget.control','site.access.request','non.core.request',
+        ]
         now=fields.Datetime.now()
-        for model_name,process_key in model_keys.items():
+        for model_name in model_names:
             if model_name not in self.env:
                 continue
+            # Use the model's own key so escalation matches the same matrix rows as _resolve_approvers
+            process_key=self.env[model_name].process_key
             records=self.env[model_name].sudo().search([('state','in',('submitted','reviewed','closure_requested'))])
             for record in records:
                 amount=record.amount or 0

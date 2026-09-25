@@ -1,1 +1,163 @@
-<odoo noupdate="1"><record id="distribution_core.demo_user_initiator" model="res.users"><field name="group_ids" eval="[(4, ref('distribution_trips.group_distribution_trips_user'))]"/></record><record id="distribution_core.demo_user_reviewer" model="res.users"><field name="group_ids" eval="[(4, ref('distribution_trips.group_distribution_trips_reviewer'))]"/></record><record id="distribution_core.demo_user_approver" model="res.users"><field name="group_ids" eval="[(4, ref('distribution_trips.group_distribution_trips_approver'))]"/></record></odoo>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+  <!-- Access for the demo users -->
+  <record id="distribution_core.demo_user_initiator" model="res.users">
+    <field name="group_ids" eval="[(4, ref('distribution_trips.group_distribution_trips_user'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_reviewer" model="res.users">
+    <field name="group_ids" eval="[(4, ref('distribution_trips.group_distribution_trips_reviewer'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('distribution_trips.group_distribution_trips_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_senior_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('distribution_trips.group_distribution_trips_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_workflow_manager" model="res.users">
+    <field name="group_ids" eval="[(4, ref('distribution_trips.group_distribution_trips_manager'))]"/>
+  </record>
+
+  <!-- Delivery trucks -->
+  <record id="demo_fleet_brand_isuzu" model="fleet.vehicle.model.brand">
+    <field name="name">Demo Isuzu</field>
+  </record>
+  <record id="demo_fleet_model_frr" model="fleet.vehicle.model">
+    <field name="name">FRR 5-Tonne Beverage Truck</field>
+    <field name="brand_id" ref="demo_fleet_brand_isuzu"/>
+  </record>
+  <record id="demo_vehicle_truck_1" model="fleet.vehicle">
+    <field name="model_id" ref="demo_fleet_model_frr"/>
+    <field name="license_plate">KDA 101A</field>
+  </record>
+  <record id="demo_vehicle_truck_2" model="fleet.vehicle">
+    <field name="model_id" ref="demo_fleet_model_frr"/>
+    <field name="license_plate">KDB 202B</field>
+  </record>
+
+  <!-- Completed trip, three days ago: approved, run, reconciled and closed -->
+  <record id="demo_trip_completed" model="distribution.trip" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_logistics"/>
+    <field name="process_date" eval="(DateTime.today() - timedelta(days=3)).strftime('%Y-%m-%d')"/>
+    <field name="route_id" ref="distribution_core.demo_route_malindi_1"/>
+    <field name="vehicle_id" ref="demo_vehicle_truck_1"/>
+    <field name="driver_id" ref="distribution_core.demo_employee_driver_1"/>
+    <field name="planned_departure" eval="(DateTime.today() - timedelta(days=3)).strftime('%Y-%m-%d 05:30:00')"/>
+    <field name="actual_departure" eval="(DateTime.today() - timedelta(days=3)).strftime('%Y-%m-%d 05:45:00')"/>
+    <field name="actual_return" eval="(DateTime.today() - timedelta(days=3)).strftime('%Y-%m-%d 14:10:00')"/>
+    <field name="odometer_start">45210</field>
+    <field name="odometer_end">45348</field>
+    <field name="fuel_issued">40</field>
+    <field name="fuel_consumed">36</field>
+    <field name="loaded_value">480000</field>
+    <field name="cash_expected">180000</field>
+    <field name="amount">480000</field>
+    <field name="submission_note">Weekly Malindi Central run.</field>
+  </record>
+  <record id="demo_trip_completed_stop_1" model="distribution.trip.stop">
+    <field name="trip_id" ref="demo_trip_completed"/>
+    <field name="sequence">10</field>
+    <field name="customer_id" ref="distribution_core.demo_customer_wholesale"/>
+    <field name="planned_arrival" eval="(DateTime.today() - timedelta(days=3)).strftime('%Y-%m-%d 06:30:00')"/>
+    <field name="actual_arrival" eval="(DateTime.today() - timedelta(days=3)).strftime('%Y-%m-%d 06:40:00')"/>
+    <field name="actual_departure" eval="(DateTime.today() - timedelta(days=3)).strftime('%Y-%m-%d 07:35:00')"/>
+    <field name="geofence_status">verified</field>
+    <field name="pod_reference">POD-MAL-0417</field>
+    <field name="cash_collected">120000</field>
+  </record>
+  <record id="demo_trip_completed_stop_2" model="distribution.trip.stop">
+    <field name="trip_id" ref="demo_trip_completed"/>
+    <field name="sequence">20</field>
+    <field name="customer_id" ref="distribution_core.demo_customer_supermarket"/>
+    <field name="planned_arrival" eval="(DateTime.today() - timedelta(days=3)).strftime('%Y-%m-%d 08:30:00')"/>
+    <field name="actual_arrival" eval="(DateTime.today() - timedelta(days=3)).strftime('%Y-%m-%d 09:05:00')"/>
+    <field name="actual_departure" eval="(DateTime.today() - timedelta(days=3)).strftime('%Y-%m-%d 10:20:00')"/>
+    <field name="geofence_status">verified</field>
+    <field name="pod_reference">POD-MAL-0418</field>
+    <field name="cash_collected">60000</field>
+  </record>
+
+  <!-- Trip on the road today -->
+  <record id="demo_trip_in_progress" model="distribution.trip" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_logistics"/>
+    <field name="route_id" ref="distribution_core.demo_route_watamu"/>
+    <field name="vehicle_id" ref="demo_vehicle_truck_2"/>
+    <field name="driver_id" ref="distribution_core.demo_employee_driver_2"/>
+    <field name="planned_departure" eval="DateTime.today().strftime('%Y-%m-%d 05:30:00')"/>
+    <field name="actual_departure" eval="DateTime.today().strftime('%Y-%m-%d 05:50:00')"/>
+    <field name="odometer_start">31877</field>
+    <field name="fuel_issued">35</field>
+    <field name="loaded_value">210000</field>
+    <field name="cash_expected">108500</field>
+    <field name="amount">210000</field>
+  </record>
+  <record id="demo_trip_in_progress_stop_1" model="distribution.trip.stop">
+    <field name="trip_id" ref="demo_trip_in_progress"/>
+    <field name="sequence">10</field>
+    <field name="customer_id" ref="distribution_core.demo_customer_kiosk"/>
+    <field name="planned_arrival" eval="DateTime.today().strftime('%Y-%m-%d 07:00:00')"/>
+    <field name="actual_arrival" eval="DateTime.today().strftime('%Y-%m-%d 07:12:00')"/>
+    <field name="actual_departure" eval="DateTime.today().strftime('%Y-%m-%d 07:40:00')"/>
+    <field name="geofence_status">verified</field>
+    <field name="pod_reference">POD-WAT-0091</field>
+    <field name="cash_collected">18000</field>
+  </record>
+  <record id="demo_trip_in_progress_stop_2" model="distribution.trip.stop">
+    <field name="trip_id" ref="demo_trip_in_progress"/>
+    <field name="sequence">20</field>
+    <field name="customer_id" ref="distribution_core.demo_customer_wholesale"/>
+    <field name="planned_arrival" eval="DateTime.today().strftime('%Y-%m-%d 10:30:00')"/>
+    <field name="geofence_status">pending</field>
+  </record>
+
+  <!-- Tomorrow's trip: approved, not yet dispatched -->
+  <record id="demo_trip_tomorrow" model="distribution.trip" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_logistics"/>
+    <field name="process_date" eval="(DateTime.today() + timedelta(days=1)).strftime('%Y-%m-%d')"/>
+    <field name="route_id" ref="distribution_core.demo_route_malindi_1"/>
+    <field name="vehicle_id" ref="demo_vehicle_truck_1"/>
+    <field name="driver_id" ref="distribution_core.demo_employee_driver_1"/>
+    <field name="planned_departure" eval="(DateTime.today() + timedelta(days=1)).strftime('%Y-%m-%d 05:30:00')"/>
+    <field name="loaded_value">350000</field>
+    <field name="cash_expected">90000</field>
+    <field name="amount">350000</field>
+  </record>
+  <record id="demo_trip_tomorrow_stop_1" model="distribution.trip.stop">
+    <field name="trip_id" ref="demo_trip_tomorrow"/>
+    <field name="sequence">10</field>
+    <field name="customer_id" ref="distribution_core.demo_customer_supermarket"/>
+    <field name="planned_arrival" eval="(DateTime.today() + timedelta(days=1)).strftime('%Y-%m-%d 06:30:00')"/>
+  </record>
+
+  <!-- Awaiting review and past its 6-hour target -->
+  <record id="demo_trip_awaiting_review" model="distribution.trip" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_logistics"/>
+    <field name="process_date" eval="(DateTime.today() + timedelta(days=2)).strftime('%Y-%m-%d')"/>
+    <field name="route_id" ref="distribution_core.demo_route_watamu"/>
+    <field name="vehicle_id" ref="demo_vehicle_truck_2"/>
+    <field name="driver_id" ref="distribution_core.demo_employee_driver_2"/>
+    <field name="planned_departure" eval="(DateTime.today() + timedelta(days=2)).strftime('%Y-%m-%d 05:30:00')"/>
+    <field name="loaded_value">160000</field>
+    <field name="cash_expected">40000</field>
+    <field name="amount">160000</field>
+  </record>
+
+  <!-- Draft plan -->
+  <record id="demo_trip_draft" model="distribution.trip" uid="distribution_core.demo_user_initiator">
+    <field name="department_id" ref="distribution_core.demo_dept_logistics"/>
+    <field name="process_date" eval="(DateTime.today() + timedelta(days=4)).strftime('%Y-%m-%d')"/>
+    <field name="route_id" ref="distribution_core.demo_route_malindi_1"/>
+    <field name="vehicle_id" ref="demo_vehicle_truck_1"/>
+    <field name="driver_id" ref="distribution_core.demo_employee_driver_1"/>
+    <field name="loaded_value">300000</field>
+    <field name="amount">300000</field>
+  </record>
+
+  <!-- Workflow -->
+  <function model="distribution.trip" name="action_submit" eval="[[ref('demo_trip_completed'), ref('demo_trip_in_progress'), ref('demo_trip_tomorrow'), ref('demo_trip_awaiting_review')]]" uid="distribution_core.demo_user_initiator"/>
+  <function model="distribution.trip" name="action_review" eval="[[ref('demo_trip_completed'), ref('demo_trip_in_progress'), ref('demo_trip_tomorrow')]]" uid="distribution_core.demo_user_reviewer"/>
+  <function model="distribution.trip" name="action_approve" eval="[[ref('demo_trip_completed'), ref('demo_trip_in_progress'), ref('demo_trip_tomorrow')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="distribution.trip" name="action_start_processing" eval="[[ref('demo_trip_completed'), ref('demo_trip_in_progress')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="distribution.trip" name="action_reconcile" eval="[[ref('demo_trip_completed')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="distribution.trip" name="action_close" eval="[[ref('demo_trip_completed')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="distribution.trip" name="write" eval="[[ref('demo_trip_awaiting_review')], {'submitted_at': (DateTime.now() - timedelta(hours=9)).strftime('%Y-%m-%d %H:%M:%S')}]"/>
+</odoo>

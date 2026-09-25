@@ -1,1 +1,140 @@
-<odoo noupdate="1"><record id="distribution_core.demo_user_initiator" model="res.users"><field name="group_ids" eval="[(4, ref('sales_commitment_control.group_sales_commitment_control_user'))]"/></record><record id="distribution_core.demo_user_reviewer" model="res.users"><field name="group_ids" eval="[(4, ref('sales_commitment_control.group_sales_commitment_control_reviewer'))]"/></record><record id="distribution_core.demo_user_approver" model="res.users"><field name="group_ids" eval="[(4, ref('sales_commitment_control.group_sales_commitment_control_approver'))]"/></record></odoo>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+  <!-- Access for the demo users -->
+  <record id="distribution_core.demo_user_initiator" model="res.users">
+    <field name="group_ids" eval="[(4, ref('sales_commitment_control.group_sales_commitment_control_user'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_reviewer" model="res.users">
+    <field name="group_ids" eval="[(4, ref('sales_commitment_control.group_sales_commitment_control_reviewer'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('sales_commitment_control.group_sales_commitment_control_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_senior_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('sales_commitment_control.group_sales_commitment_control_approver'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_workflow_manager" model="res.users">
+    <field name="group_ids" eval="[(4, ref('sales_commitment_control.group_sales_commitment_control_manager'))]"/>
+  </record>
+
+  <!-- Wholesale quarterly commitment (standard value): approved and being released -->
+  <record id="demo_sc_wholesale_quarter" model="sales.commitment" uid="distribution_core.demo_user_initiator">
+    <field name="customer_id" ref="distribution_core.demo_customer_wholesale"/>
+    <field name="commitment_type">hybrid</field>
+    <field name="start_date" eval="DateTime.today().replace(day=1).strftime('%Y-%m-%d')"/>
+    <field name="end_date" eval="(DateTime.today().replace(day=1) + relativedelta(months=3) - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+    <field name="payment_term_id" ref="account.account_payment_term_30days"/>
+    <field name="committed_value">416500</field>
+    <field name="amount">416500</field>
+    <field name="submission_note">Quarterly offtake agreed at the customer review meeting, with a volume price on cola and water.</field>
+  </record>
+  <record id="demo_sc_wholesale_quarter_cola" model="sales.commitment.line">
+    <field name="commitment_id" ref="demo_sc_wholesale_quarter"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_cola_rgb'))]"/>
+    <field name="committed_qty">250</field>
+    <field name="unit_price">1150</field>
+  </record>
+  <record id="demo_sc_wholesale_quarter_water" model="sales.commitment.line">
+    <field name="commitment_id" ref="demo_sc_wholesale_quarter"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_water_pet'))]"/>
+    <field name="committed_qty">150</field>
+    <field name="unit_price">860</field>
+  </record>
+
+  <!-- Supermarket half-year commitment (high value): reviewed, waiting for the senior approver -->
+  <record id="demo_sc_supermarket_half_year" model="sales.commitment" uid="distribution_core.demo_user_initiator">
+    <field name="customer_id" ref="distribution_core.demo_customer_supermarket"/>
+    <field name="commitment_type">quantity</field>
+    <field name="start_date" eval="(DateTime.today().replace(day=1) + relativedelta(months=1)).strftime('%Y-%m-%d')"/>
+    <field name="end_date" eval="(DateTime.today().replace(day=1) + relativedelta(months=7) - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+    <field name="payment_term_id" ref="account.account_payment_term_15days"/>
+    <field name="committed_value">863000</field>
+    <field name="amount">863000</field>
+  </record>
+  <record id="demo_sc_supermarket_half_year_cola" model="sales.commitment.line">
+    <field name="commitment_id" ref="demo_sc_supermarket_half_year"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_cola_rgb'))]"/>
+    <field name="committed_qty">500</field>
+    <field name="unit_price">1150</field>
+  </record>
+  <record id="demo_sc_supermarket_half_year_orange" model="sales.commitment.line">
+    <field name="commitment_id" ref="demo_sc_supermarket_half_year"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_orange_pet'))]"/>
+    <field name="committed_qty">300</field>
+    <field name="unit_price">960</field>
+  </record>
+
+  <!-- Kiosk commitment returned for correction -->
+  <record id="demo_sc_kiosk_quarter" model="sales.commitment" uid="distribution_core.demo_user_initiator">
+    <field name="customer_id" ref="distribution_core.demo_customer_kiosk"/>
+    <field name="commitment_type">quantity</field>
+    <field name="start_date" eval="DateTime.today().replace(day=1).strftime('%Y-%m-%d')"/>
+    <field name="end_date" eval="(DateTime.today().replace(day=1) + relativedelta(months=3) - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+    <field name="committed_value">120000</field>
+    <field name="amount">120000</field>
+  </record>
+  <record id="demo_sc_kiosk_quarter_cola" model="sales.commitment.line">
+    <field name="commitment_id" ref="demo_sc_kiosk_quarter"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_cola_rgb'))]"/>
+    <field name="committed_qty">100</field>
+    <field name="unit_price">1200</field>
+  </record>
+
+  <!-- Nairobi hotel commitment in draft -->
+  <record id="demo_sc_hotel_quarter" model="sales.commitment" uid="distribution_core.demo_user_initiator">
+    <field name="region_id" ref="distribution_core.demo_region_nairobi"/>
+    <field name="site_id" ref="distribution_core.demo_site_nairobi"/>
+    <field name="customer_id" ref="distribution_core.demo_customer_hotel"/>
+    <field name="commitment_type">value</field>
+    <field name="start_date" eval="(DateTime.today().replace(day=1) + relativedelta(months=1)).strftime('%Y-%m-%d')"/>
+    <field name="end_date" eval="(DateTime.today().replace(day=1) + relativedelta(months=4) - timedelta(days=1)).strftime('%Y-%m-%d')"/>
+    <field name="committed_value">352000</field>
+    <field name="amount">352000</field>
+  </record>
+  <record id="demo_sc_hotel_quarter_water" model="sales.commitment.line">
+    <field name="commitment_id" ref="demo_sc_hotel_quarter"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_water_pet'))]"/>
+    <field name="committed_qty">400</field>
+    <field name="unit_price">880</field>
+  </record>
+
+  <!-- Workflow -->
+  <function model="sales.commitment" name="action_submit" eval="[[ref('demo_sc_wholesale_quarter'), ref('demo_sc_supermarket_half_year'), ref('demo_sc_kiosk_quarter')]]" uid="distribution_core.demo_user_initiator"/>
+  <function model="sales.commitment" name="action_review" eval="[[ref('demo_sc_wholesale_quarter')]]" uid="distribution_core.demo_user_reviewer"/>
+  <function model="sales.commitment" name="action_approve" eval="[[ref('demo_sc_wholesale_quarter')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="sales.commitment" name="action_start_processing" eval="[[ref('demo_sc_wholesale_quarter')]]" uid="distribution_core.demo_user_approver"/>
+  <!-- High value (500k and above): approver reviews, senior approver signs off -->
+  <function model="sales.commitment" name="action_review" eval="[[ref('demo_sc_supermarket_half_year')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="sales.commitment" name="write" eval="[[ref('demo_sc_kiosk_quarter')], {'action_reason': 'Volumes exceed the kiosk storage capacity. Split into monthly commitments of about 35 cases.'}]"/>
+  <function model="sales.commitment" name="action_return_correction" eval="[[ref('demo_sc_kiosk_quarter')]]" uid="distribution_core.demo_user_reviewer"/>
+
+  <!-- First delivery release against the wholesale commitment, converted to a quotation -->
+  <record id="demo_sc_wholesale_release_1" model="sales.delivery.release">
+    <field name="commitment_id" ref="demo_sc_wholesale_quarter"/>
+  </record>
+  <record id="demo_sc_wholesale_release_1_cola" model="sales.delivery.release.line">
+    <field name="release_id" ref="demo_sc_wholesale_release_1"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_cola_rgb'))]"/>
+    <field name="quantity">60</field>
+    <field name="unit_price">1150</field>
+  </record>
+  <record id="demo_sc_wholesale_release_1_water" model="sales.delivery.release.line">
+    <field name="release_id" ref="demo_sc_wholesale_release_1"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_water_pet'))]"/>
+    <field name="quantity">40</field>
+    <field name="unit_price">860</field>
+  </record>
+  <function model="sales.delivery.release" name="action_create_sale_order" eval="[[ref('demo_sc_wholesale_release_1')]]"/>
+
+  <!-- Second release, still in draft -->
+  <record id="demo_sc_wholesale_release_2" model="sales.delivery.release">
+    <field name="commitment_id" ref="demo_sc_wholesale_quarter"/>
+    <field name="requested_date" eval="(DateTime.today() + timedelta(days=10)).strftime('%Y-%m-%d')"/>
+  </record>
+  <record id="demo_sc_wholesale_release_2_cola" model="sales.delivery.release.line">
+    <field name="release_id" ref="demo_sc_wholesale_release_2"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_cola_rgb'))]"/>
+    <field name="quantity">80</field>
+    <field name="unit_price">1150</field>
+  </record>
+</odoo>

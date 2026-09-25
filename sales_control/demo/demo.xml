@@ -1,1 +1,90 @@
-<odoo noupdate="1"><record id="distribution_core.demo_user_initiator" model="res.users"><field name="group_ids" eval="[(4, ref('sales_control.group_sales_control_user'))]"/></record><record id="distribution_core.demo_user_reviewer" model="res.users"><field name="group_ids" eval="[(4, ref('sales_control.group_sales_control_reviewer'))]"/></record><record id="distribution_core.demo_user_approver" model="res.users"><field name="group_ids" eval="[(4, ref('sales_control.group_sales_control_approver'))]"/></record></odoo>
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+  <!-- Access for the demo users -->
+  <record id="distribution_core.demo_user_initiator" model="res.users">
+    <field name="group_ids" eval="[(4, ref('sales_control.group_sales_control_user')), (4, ref('sales_team.group_sale_salesman_all_leads'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_reviewer" model="res.users">
+    <field name="group_ids" eval="[(4, ref('sales_control.group_sales_control_reviewer')), (4, ref('sales_team.group_sale_salesman_all_leads'))]"/>
+  </record>
+  <record id="distribution_core.demo_user_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('sales_control.group_sales_control_approver')), (4, ref('sales_team.group_sale_salesman_all_leads'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_senior_approver" model="res.users">
+    <field name="group_ids" eval="[(4, ref('sales_control.group_sales_control_approver')), (4, ref('sales_team.group_sale_salesman_all_leads'))]"/>
+  </record>
+  <record id="workflow_approval.demo_user_workflow_manager" model="res.users">
+    <field name="group_ids" eval="[(4, ref('sales_control.group_sales_control_manager'))]"/>
+  </record>
+
+  <!-- Quotations that need a commercial exception before confirmation -->
+  <record id="demo_so_exception_supermarket" model="sale.order">
+    <field name="partner_id" ref="distribution_core.demo_customer_supermarket"/>
+    <field name="user_id" ref="distribution_core.demo_user_sales_rep"/>
+    <field name="payment_term_id" ref="account.account_payment_term_15days"/>
+  </record>
+  <record id="demo_so_exception_supermarket_cola" model="sale.order.line">
+    <field name="order_id" ref="demo_so_exception_supermarket"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_cola_rgb'))]"/>
+    <field name="product_uom_qty">100</field>
+    <field name="price_unit">1050</field>
+  </record>
+
+  <record id="demo_so_exception_kiosk" model="sale.order">
+    <field name="partner_id" ref="distribution_core.demo_customer_kiosk"/>
+    <field name="user_id" ref="distribution_core.demo_user_sales_agent"/>
+  </record>
+  <record id="demo_so_exception_kiosk_energy" model="sale.order.line">
+    <field name="order_id" ref="demo_so_exception_kiosk"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_energy_can'))]"/>
+    <field name="product_uom_qty">20</field>
+    <field name="price_unit">2400</field>
+  </record>
+
+  <record id="demo_so_exception_hotel" model="sale.order">
+    <field name="partner_id" ref="distribution_core.demo_customer_hotel"/>
+  </record>
+  <record id="demo_so_exception_hotel_water" model="sale.order.line">
+    <field name="order_id" ref="demo_so_exception_hotel"/>
+    <field name="product_id" model="product.product" search="[('product_tmpl_id', '=', ref('distribution_core.demo_product_water_pet'))]"/>
+    <field name="product_uom_qty">200</field>
+    <field name="price_unit">800</field>
+  </record>
+
+  <!-- Discount exception: approved -->
+  <record id="demo_exception_supermarket_discount" model="sales.exception" uid="distribution_core.demo_user_initiator">
+    <field name="sale_order_id" ref="demo_so_exception_supermarket"/>
+    <field name="exception_type">discount</field>
+    <field name="requested_override">15000</field>
+    <field name="amount">15000</field>
+    <field name="justification">Opening-order discount of KES 150 per case to win the chain listing against a competing distributor.</field>
+  </record>
+
+  <!-- Credit exception: submitted and past its 4-hour target -->
+  <record id="demo_exception_kiosk_credit" model="sales.exception" uid="distribution_core.demo_user_initiator">
+    <field name="sale_order_id" ref="demo_so_exception_kiosk"/>
+    <field name="exception_type">credit</field>
+    <field name="requested_override">48000</field>
+    <field name="amount">48000</field>
+    <field name="justification">Cash-only kiosk requests 7-day credit on the energy drink launch order.</field>
+  </record>
+
+  <!-- Price exception: rejected -->
+  <record id="demo_exception_hotel_price" model="sales.exception" uid="distribution_core.demo_user_initiator">
+    <field name="region_id" ref="distribution_core.demo_region_nairobi"/>
+    <field name="site_id" ref="distribution_core.demo_site_nairobi"/>
+    <field name="sale_order_id" ref="demo_so_exception_hotel"/>
+    <field name="exception_type">price</field>
+    <field name="requested_override">20000</field>
+    <field name="amount">20000</field>
+    <field name="justification">Hotel requests a price below list to match their current supplier.</field>
+  </record>
+
+  <!-- Workflow -->
+  <function model="sales.exception" name="action_submit" eval="[[ref('demo_exception_supermarket_discount'), ref('demo_exception_kiosk_credit'), ref('demo_exception_hotel_price')]]" uid="distribution_core.demo_user_initiator"/>
+  <function model="sales.exception" name="action_review" eval="[[ref('demo_exception_supermarket_discount')]]" uid="distribution_core.demo_user_reviewer"/>
+  <function model="sales.exception" name="action_approve" eval="[[ref('demo_exception_supermarket_discount')]]" uid="distribution_core.demo_user_approver"/>
+  <function model="sales.exception" name="write" eval="[[ref('demo_exception_kiosk_credit')], {'submitted_at': (DateTime.now() - timedelta(hours=7)).strftime('%Y-%m-%d %H:%M:%S')}]"/>
+  <function model="sales.exception" name="write" eval="[[ref('demo_exception_hotel_price')], {'action_reason': 'Requested price is below landed cost. Offer the standard volume tier instead.'}]"/>
+  <function model="sales.exception" name="action_reject" eval="[[ref('demo_exception_hotel_price')]]" uid="distribution_core.demo_user_reviewer"/>
+</odoo>
